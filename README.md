@@ -3,6 +3,11 @@
 ## Introduction
 Documento is a production-ready legal document intelligence system built for Pearson Specter Litt. It specializes in processing "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
 
+## Video Presentation
+Here is the video part 1: Intro: [Intro Video Link](https://www.loom.com/share/c209704d540942c6b41c46dabe621170)
+Here is the video part 2: Architecture: [Architecture Video Link](https://www.loom.com/share/2b612e4c9e574602bd5e867b4a88c362)
+
+
 ## Core Features
 - **Docling-Powered Ingestion:** Advanced parsing of multiple formats (PDF, DOCX, Images, etc.) with high-fidelity Markdown export and OCR. [Docling Project](https://github.com/docling-project/docling)
 - **Grounded Retrieval:** Integrated with Qdrant vector database for precise evidence retrieval with chunk-level traceability.
