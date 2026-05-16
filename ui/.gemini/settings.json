@@ -1,0 +1,19 @@
+{
+  "theme": "Default",
+  "mcp": {
+    "allowed": ["shadcn"],
+    "excluded": []
+  },
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ],
+      "trust": true,
+      "env": {},
+      "timeout": 30000
+    }
+  }
+}
