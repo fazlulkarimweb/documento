@@ -12,7 +12,9 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
 - **Docling-Powered Ingestion:** Advanced parsing of multiple formats (PDF, DOCX, Images, etc.) with high-fidelity Markdown export and OCR. [Docling Project](https://github.com/docling-project/docling)
 - **Grounded Retrieval:** Integrated with **SQLite** using the **sqlite-vec** extension for efficient local vector search and chunk-level traceability.
 - **Dynamic Grounding Score:** Real-time calculation of grounding confidence based on citation coverage and density.
-- **Manageable Agent Skills:** The system is pre-loaded with specialized skills for generating legal drafts. You can create, update, and delete these skills via API to tailor the agent's behavior to firm-specific standards.
+- **Optimized Performance:** All heavy AI models (Docling, Embeddings) are pre-loaded at application startup via FastAPI lifespan events, ensuring high-speed processing from the very first request.
+- **Manageable Agent Skills:** The system is pre-loaded with specialized skills for generating legal drafts.
+ You can create, update, and delete these skills via API to tailor the agent's behavior to firm-specific standards.
 
 ## Agent Skills
 Legal Draft Generator utilizes a structured **Skills** architecture (`skills/`). Every draft type (e.g., `legal-memo`, `legal-notice`) is powered by a dedicated skill definition that includes:

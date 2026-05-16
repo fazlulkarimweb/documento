@@ -29,8 +29,19 @@ import asyncio
 import os
 import shutil
 from datetime import datetime
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="Legal Draft Generator API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Warm up models and connections
+    print("Pre-loading AI models and weights...")
+    get_embeddings()
+    # Processor is already instantiated at module level, but we could 
+    # trigger a dummy conversion here if Docling supported a specific 'warmup'
+    yield
+    print("Shutting down...")
+
+app = FastAPI(title="Legal Draft Generator API", version="0.1.0", lifespan=lifespan)
 
 # Enable CORS for all origins
 app.add_middleware(
@@ -47,12 +58,18 @@ vector_store = VectorStore()
 learner = Learner()
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 
+# Pre-initialize embeddings to avoid loading on request
+_embeddings_instance = None
+
 def get_embeddings():
-    settings = get_settings()
-    return OpenAIEmbeddings(
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base="https://openrouter.ai/api/v1"
-    )
+    global _embeddings_instance
+    if _embeddings_instance is None:
+        settings = get_settings()
+        _embeddings_instance = OpenAIEmbeddings(
+            openai_api_key=settings.OPENROUTER_API_KEY,
+            openai_api_base="https://openrouter.ai/api/v1"
+        )
+    return _embeddings_instance
 
 # --- Document Endpoints ---
 
@@ -152,7 +169,7 @@ async def generate_draft(request: DraftGenerationRequest):
             "draft_id": draft_id,
             "status": "success",
             "draft_content": result["content"],
-            "citations": result["citations"],
+            "citations": [c.model_dump() if hasattr(c, "model_dump") else c for c in result["citations"]],
             "source_chunks": source_chunks_data,
             "draft_type": request.draft_type,
             "document_ids": request.document_ids,
