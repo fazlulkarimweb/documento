@@ -105,7 +105,7 @@ async def test_feedback_loop_endpoint(mock_app):
     Test POST /api/v1/drafts/feedback with mocks
     """
     from legal_draft_generator.main import learner
-    learner.learn_from_edit = AsyncMock(return_value={"pattern": "learned"})
+    learner.learn_from_edit = AsyncMock(return_value="# Updated Skill Content")
     
     transport = ASGITransport(app=mock_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

@@ -5,6 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from legal_draft_generator.config import get_settings
 import json
 import os
+import difflib
 
 class Learner:
     def __init__(self):
@@ -14,55 +15,117 @@ class Learner:
             openai_api_key=settings.OPENROUTER_API_KEY,
             openai_api_base="https://openrouter.ai/api/v1"
         )
-        self.memory_dir = "memory"
-        os.makedirs(self.memory_dir, exist_ok=True)
 
     async def learn_from_edit(
         self, 
         original_content: str, 
         edited_content: str, 
         draft_type: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> str:
         """
-        Analyzes the difference between original and edited content to extract a pattern for a specific draft type.
+        Learns from an operator edit by identifying the diff and letting the LLM merge it.
         """
+        # Calculate a unified diff to focus the LLM on changes
+        diff = difflib.unified_diff(
+            original_content.splitlines(),
+            edited_content.splitlines(),
+            fromfile='original',
+            tofile='edited',
+            lineterm=''
+        )
+        diff_text = "\n".join(list(diff))
+        
+        update_context = f"""The operator edited a {draft_type} draft. 
+        
+        DIFF OF CHANGES:
+        {diff_text if diff_text else "No visible text changes detected in diff."}
+        
+        FULL EDITED CONTENT (for context):
+        {edited_content}"""
+        
+        return await self._orchestrate_skill_update(draft_type, update_context)
+
+    async def learn_from_instruction(
+        self, 
+        new_instruction: str, 
+        draft_type: str
+    ) -> str:
+        """
+        Integrates a direct instruction by letting the LLM merge it into the existing skill.
+        """
+        update_context = f"The operator provided a new direct instruction for {draft_type} drafts:\n{new_instruction}"
+        return await self._orchestrate_skill_update(draft_type, update_context)
+
+    async def _orchestrate_skill_update(self, draft_type: str, update_context: str) -> str:
+        """
+        The central LLM-driven merging engine.
+        """
+        skill_dir = f"skills/{draft_type}"
+        skill_md_path = os.path.join(skill_dir, "SKILL.md")
+        
+        existing_skill_content = "No existing skill definition found."
+        if os.path.exists(skill_md_path):
+            try:
+                with open(skill_md_path, "r") as f:
+                    existing_skill_content = f.read()
+            except Exception:
+                pass
+
         prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI research engineer at Pearson Specter Litt. 
-            Analyze the following edit made by a legal operator for a '{draft_type}' draft. 
-            Identify the underlying preference or correction pattern. 
-            Output a JSON object with 'pattern_type', 'description', and 'suggested_instruction'."""),
-            ("human", "Original:\n{original}\n\nEdited:\n{edited}")
+            ("system", """You are the Lead Legal Knowledge Engineer at Pearson Specter Litt.
+            Your task is to maintain and refine 'Agent Skills' for our legal AI.
+            
+            CURRENT SKILL DEFINITION ({draft_type}):
+            {existing_content}
+
+            NEW INPUT (Edit Diff or Direct Directive):
+            {update_context}
+
+            TASK:
+            1. STEP 1 (SURGICAL ANALYSIS): Analyze exactly what was changed in the diff. Extract ONLY the specific new legal preference, stylistic rule, or factual correction.
+            2. STEP 2 (SURGICAL MERGE): Update ONLY the relevant instructions in the CURRENT SKILL DEFINITION or add a new specific instruction. 
+            3. STEP 3 (RESOLVE): Contradictions are resolved by giving preference to the LATEST input.
+            4. STEP 4 (MINIMALISM): Do not add generic fluff. Keep the skill focused on patterns learned from edits.
+            
+            OUTPUT:
+            Output ONLY the complete, final Markdown content for the SKILL.md file. 
+            Structure:
+            # Skill: {draft_type}
+            ## Metadata
+            - [Short description of patterns learned]
+            ## Instructions
+            - [Actionable bullet points]
+            
+            No conversational filler or markdown code blocks - just the raw file content."""),
         ])
 
         chain = prompt | self.llm
         response = await chain.ainvoke({
             "draft_type": draft_type,
-            "original": original_content,
-            "edited": edited_content
+            "existing_content": existing_skill_content,
+            "update_context": update_context
         })
 
-        try:
-            # Basic JSON extraction from LLM response
-            content = response.content
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            pattern = json.loads(content)
-            pattern["draft_type"] = draft_type
+        final_content = response.content.strip()
+        # Clean up any potential markdown wrap
+        if final_content.startswith("```markdown"):
+            final_content = final_content.split("```markdown")[1].split("```")[0].strip()
+        elif final_content.startswith("```"):
+            final_content = final_content.split("```")[1].split("```")[0].strip()
+
+        # Final check: Ensure we are not saving empty content if LLM fails
+        if not final_content:
+            return existing_skill_content
+
+        # Save the skill persistently
+        os.makedirs(skill_dir, exist_ok=True)
+        os.makedirs(os.path.join(skill_dir, "scripts"), exist_ok=True)
+        os.makedirs(os.path.join(skill_dir, "templates"), exist_ok=True)
+        os.makedirs(os.path.join(skill_dir, "resources"), exist_ok=True)
+        
+        # Absolute path for debugging/reliability
+        abs_skill_path = os.path.abspath(skill_md_path)
+        with open(abs_skill_path, "w") as f:
+            f.write(final_content)
             
-            # Save the pattern by draft type to allow multiple patterns or a consolidated one
-            # For simplicity, we'll append to a list or overwrite the latest for that type
-            pattern_file = os.path.join(self.memory_dir, f"patterns_{draft_type}.json")
-            
-            patterns = []
-            if os.path.exists(pattern_file):
-                with open(pattern_file, "r") as f:
-                    patterns = json.load(f)
-            
-            patterns.append(pattern)
-            
-            with open(pattern_file, "w") as f:
-                json.dump(patterns, f)
-            
-            return pattern
-        except Exception:
-            return None
+        return final_content

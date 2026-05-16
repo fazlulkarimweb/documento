@@ -34,17 +34,17 @@ class Drafter:
             for c in retrieved_context
         ])
 
-        # Retrieve learned patterns for this draft type
+        # Retrieve learned patterns from Skill architecture
         learned_instructions = ""
-        pattern_file = os.path.join(self.memory_dir, f"patterns_{draft_type}.json")
-        if os.path.exists(pattern_file):
+        skill_md_path = f"skills/{draft_type}/SKILL.md"
+        if os.path.exists(skill_md_path):
             try:
-                with open(pattern_file, "r") as f:
-                    patterns = json.load(f)
-                    if patterns:
-                        learned_instructions = "\n\nLEARNED PREFERENCES FROM PREVIOUS EDITS:\n"
-                        for p in patterns:
-                            learned_instructions += f"- {p.get('suggested_instruction')}\n"
+                with open(skill_md_path, "r") as f:
+                    skill_content = f.read()
+                    if "## Instructions" in skill_content:
+                        instructions_section = skill_content.split("## Instructions")[1].strip()
+                        if instructions_section:
+                            learned_instructions = f"\n\nLEARNED SKILL INSTRUCTIONS FOR {draft_type.upper()}:\n{instructions_section}\n"
             except Exception:
                 pass
 

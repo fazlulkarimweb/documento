@@ -12,7 +12,13 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
 - **Docling-Powered Ingestion:** Advanced parsing of multiple formats (PDF, DOCX, Images, etc.) with high-fidelity Markdown export and OCR. [Docling Project](https://github.com/docling-project/docling)
 - **Grounded Retrieval:** Integrated with **SQLite** using the **sqlite-vec** extension for efficient local vector search and chunk-level traceability.
 - **Dynamic Grounding Score:** Real-time calculation of grounding confidence based on citation coverage and density.
-- **Type-Centric Learning Loop:** Extracts reusable patterns from operator edits and injects them into future drafts of the same type.
+- **Manageable Agent Skills:** The system is pre-loaded with specialized skills for generating legal drafts. You can create, update, and delete these skills via API to tailor the agent's behavior to firm-specific standards.
+
+## Agent Skills
+Legal Draft Generator utilizes a structured **Skills** architecture (`skills/`). Every draft type (e.g., `legal-memo`, `legal-notice`) is powered by a dedicated skill definition that includes:
+- **Core Instructions:** LLM directives learned from operator edits or manual administrative updates.
+- **Intelligent Merging:** When updating a skill, the system uses an LLM to surgically merge new instructions into the existing definition, automatically resolving contradictions.
+- **Persistent Memory:** Skills are stored as human-readable `SKILL.md` files, ensuring long-term learning and easy auditing.
 
 ## Setup Instructions
 
@@ -93,7 +99,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "document_ids": ["doc-uuid-here"],
+  "document_ids": ["af8f23dc..."],
   "draft_type": "legal-memo",
   "focus_query": "Summarize the financial arrears"
 }'
@@ -120,7 +126,7 @@ curl -X 'POST' \
 ```
 
 ### 3. Submit Feedback (Learning Loop)
-Updates the system's preferences for a specific draft type.
+Updates the system's preferences for a specific draft type based on the diff between original and edited content. Contradictions are automatically resolved by the LLM.
 ```bash
 curl -X 'POST' \
   'http://localhost:8000/api/v1/drafts/feedback' \
@@ -128,8 +134,8 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "draft_type": "legal-memo",
-  "original_content": "...",
-  "edited_content": "**MEMORANDUM By AI**\n..."
+  "original_content": "**MEMORANDUM**\n\n**TO:** Legal Team\n**FROM:** Harvey\n...",
+  "edited_content": "**MEMORANDUM BY HARVEY**\n\n**TO:** Legal Team\n**FROM:** Harvey\n..."
 }'
 ```
 
@@ -137,14 +143,32 @@ curl -X 'POST' \
 ```json
 {
   "status": "success",
-  "learned_pattern": {
-    "pattern_type": "AI_Attribution_In_Header",
-    "suggested_instruction": "Ensure all legal draft headers include the suffix 'By AI'...",
-    "draft_type": "legal-memo"
-  }
+  "updated_skill": "# Skill: legal-memo\n## Metadata\n- Pattern Type: Direct_Override\n- Description: Enforce memorandum header labeling, active voice in background sections, and specific signatory requirements as per partner corrections.\n\n## Instructions\n- Headers must explicitly state \"MEMORANDUM BY HARVEY\".\n- Ensure the background section is written exclusively in the active voice.\n- All memos must be signed by JHON only.",
+  "message": "Feedback for legal-memo processed and skill updated"
 }
 ```
-*Note: In the next generation for `legal-memo`, this pattern is automatically injected into the LLM context.*
+
+### 4. Manage Agent Skills (CRUD)
+Directly manage the agent's persistent behaviors.
+
+**Get Skill Details:**
+```bash
+curl -X 'GET' 'http://localhost:8000/api/v1/skills/legal-memo'
+```
+
+**Update Skill (Intelligent LLM Merge):**
+Manual updates are merged into the existing skill using LLM reasoning to ensure consistency.
+```bash
+curl -X 'PUT' 'http://localhost:8000/api/v1/skills/legal-memo' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"content": "Add signed by Rocky too"}'
+```
+
+**Delete Skill:**
+```bash
+curl -X 'DELETE' 'http://localhost:8000/api/v1/skills/legal-memo'
+```
 
 ## Architecture Overview
 The system is built on a modular, high-performance pipeline designed for legal intelligence:
@@ -152,7 +176,7 @@ The system is built on a modular, high-performance pipeline designed for legal i
 1.  **Ingestion (Docling):** Uses [Docling](https://github.com/docling-project/docling) for advanced parsing of PDFs, images, and complex office formats. It provides high-fidelity Markdown export and OCR, essential for handling the "messy" documents typical of Pearson Specter Litt's casework.
 2.  **Vector Store (SQLite + sqlite-vec):** Documents are chunked and indexed in a local **SQLite** database. We utilize the **sqlite-vec** extension for high-performance vector search, ensuring strict, isolated retrieval during the RAG process.
 3.  **Grounded Drafting (OpenRouter):** Generation is handled via **OpenRouter**, allowing us to utilize powerful models like GPT-4o or Claude 3. All generated content is strictly cited against specific chunk IDs from the local database.
-4.  **Learning Loop (Feedback Analysis):** An asynchronous-ready process analyzes operator edits to extract reusable patterns, which are then injected into future generations to improve style and accuracy.
+4.  **Agent Skills (Persistent Learning):** An LLM-driven process analyzes operator edits and direct instructions to maintain structured **Skills** (`skills/<draft_type>/SKILL.md`). The system surgically merges new knowledge and resolves contradictions autonomously.
 
 **Extensibility:**
 The architecture is intentionally modular. While it currently integrates Docling, SQLite, and OpenRouter, the system is designed to easily incorporate additional APIs (e.g., custom OCR services, legal database connectors, or alternative LLM providers) as requirements evolve.
@@ -174,7 +198,7 @@ The architecture is intentionally modular. While it currently integrates Docling
 The system was validated against the provided "messy" suite:
 - **OCR Robustness:** Successfully extracted financial arrears (282,400 BDT) from noisy/handwritten-style PDFs.
 - **Grounding Accuracy:** Drafts consistently cited specific CHUNK IDs as instructed.
-- **Learning Loop:** Verified that patterns like "By AI" attribution are correctly learned and injected into future drafts.
+- **Learning Loop:** Verified that patterns like "By AI" attribution and "MEMORANDUM BY HARVEY" headers are correctly learned and injected into future drafts.
 
 ---
 *Developed for the Pearson Specter Litt AI Engineer Assessment.*

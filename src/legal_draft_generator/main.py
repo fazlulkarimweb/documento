@@ -6,6 +6,8 @@ from legal_draft_generator.models import (
     DraftGenerationResponse,
     FeedbackRequest,
     FeedbackResponse,
+    SkillResponse,
+    SkillUpdateRequest,
     SystemMetricsResponse
 )
 from legal_draft_generator.ingestion.processor import DocumentProcessor
@@ -18,6 +20,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Optional, List
 import uuid
 import asyncio
+import os
+import shutil
 
 app = FastAPI(title="Legal Draft Generator API", version="0.1.0")
 
@@ -120,14 +124,14 @@ async def generate_draft(request: DraftGenerationRequest):
 @app.post("/api/v1/drafts/feedback", response_model=FeedbackResponse)
 async def submit_feedback(request: FeedbackRequest):
     try:
-        pattern = await learner.learn_from_edit(
+        final_skill = await learner.learn_from_edit(
             request.original_content, request.edited_content, request.draft_type
         )
         
         return FeedbackResponse(
             status="success",
-            learned_pattern=pattern,
-            message=f"Feedback for {request.draft_type} processed and pattern learned"
+            updated_skill=final_skill,
+            message=f"Feedback for {request.draft_type} processed and skill updated"
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -142,3 +146,35 @@ async def get_metrics():
         learning_loop_effectiveness={"improvement_delta": 0.15},
         overall_system_health={"status": "healthy", "version": "0.1.0"}
     )
+
+# --- Skills Management APIs ---
+
+@app.get("/api/v1/skills/{draft_type}", response_model=SkillResponse)
+async def get_skill(draft_type: str):
+    skill_md_path = f"skills/{draft_type}/SKILL.md"
+    if not os.path.exists(skill_md_path):
+        raise HTTPException(status_code=404, detail=f"Skill for {draft_type} not found")
+    
+    with open(skill_md_path, "r") as f:
+        content = f.read()
+    
+    return SkillResponse(draft_type=draft_type, content=content)
+
+@app.put("/api/v1/skills/{draft_type}", response_model=SkillResponse)
+async def update_skill(draft_type: str, request: SkillUpdateRequest):
+    try:
+        # LLM-driven merge and update
+        final_skill = await learner.learn_from_instruction(request.content, draft_type)
+        
+        return SkillResponse(draft_type=draft_type, content=final_skill)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/v1/skills/{draft_type}")
+async def delete_skill(draft_type: str):
+    skill_dir = f"skills/{draft_type}"
+    if not os.path.exists(skill_dir):
+        raise HTTPException(status_code=404, detail=f"Skill directory for {draft_type} not found")
+    
+    shutil.rmtree(skill_dir)
+    return {"status": "success", "message": f"Skill {draft_type} and its directory deleted"}

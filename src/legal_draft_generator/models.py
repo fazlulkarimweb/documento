@@ -34,7 +34,7 @@ class FeedbackRequest(BaseModel):
 
 class FeedbackResponse(BaseModel):
     status: str
-    learned_pattern: Optional[Dict] = None
+    updated_skill: str
     message: str
 
 class SystemMetricsResponse(BaseModel):
@@ -43,3 +43,11 @@ class SystemMetricsResponse(BaseModel):
     draft_quality_metrics: Dict
     learning_loop_effectiveness: Dict
     overall_system_health: Dict
+
+class SkillResponse(BaseModel):
+    draft_type: str
+    content: str
+    metadata: Optional[Dict] = None
+
+class SkillUpdateRequest(BaseModel):
+    content: str  # The full new content for SKILL.md
