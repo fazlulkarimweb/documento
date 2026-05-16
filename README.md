@@ -151,7 +151,25 @@ curl -X 'POST' \
 ### 4. Manage Agent Skills (CRUD)
 Directly manage the agent's persistent behaviors.
 
-**Get Skill Details:**
+**Get All Skills:**
+```bash
+curl -X 'GET' 'http://localhost:8000/api/v1/skills'
+```
+
+**Sample Output:**
+```json
+{
+  "skills": [
+    {
+      "draft_type": "legal-memo",
+      "content": "# Skill: legal-memo\n## Metadata\n- Pattern Type: Direct_Override\n- Description: Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements for Jhon and Rocky.\n\n## Instructions\n- Headers must explicitly state \"MEMORANDUM BY HARVEY\".\n- Ensure the background section is written exclusively in the active voice.\n- All memos must be signed by JHON and ROCKY.\n",
+      "metadata": null
+    }
+  ]
+}
+```
+
+**Get Specific Skill Details:**
 ```bash
 curl -X 'GET' 'http://localhost:8000/api/v1/skills/legal-memo'
 ```

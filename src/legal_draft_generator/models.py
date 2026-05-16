@@ -49,5 +49,8 @@ class SkillResponse(BaseModel):
     content: str
     metadata: Optional[Dict] = None
 
+class SkillsListResponse(BaseModel):
+    skills: List[SkillResponse]
+
 class SkillUpdateRequest(BaseModel):
     content: str  # The full new content for SKILL.md

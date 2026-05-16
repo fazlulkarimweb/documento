@@ -7,6 +7,7 @@ from legal_draft_generator.models import (
     FeedbackRequest,
     FeedbackResponse,
     SkillResponse,
+    SkillsListResponse,
     SkillUpdateRequest,
     SystemMetricsResponse
 )
@@ -148,6 +149,20 @@ async def get_metrics():
     )
 
 # --- Skills Management APIs ---
+
+@app.get("/api/v1/skills", response_model=SkillsListResponse)
+async def list_skills():
+    skills_list = []
+    base_skills_dir = "skills"
+    if os.path.exists(base_skills_dir):
+        for draft_type in os.listdir(base_skills_dir):
+            skill_md_path = os.path.join(base_skills_dir, draft_type, "SKILL.md")
+            if os.path.isfile(skill_md_path):
+                with open(skill_md_path, "r") as f:
+                    content = f.read()
+                skills_list.append(SkillResponse(draft_type=draft_type, content=content))
+    
+    return SkillsListResponse(skills=skills_list)
 
 @app.get("/api/v1/skills/{draft_type}", response_model=SkillResponse)
 async def get_skill(draft_type: str):
