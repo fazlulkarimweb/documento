@@ -126,4 +126,4 @@ async def test_full_workflow_smoke():
         
         assert gen_resp.status_code == 200
         assert "draft_content" in gen_resp.json()
-        assert len(gen_resp.json()["citations"]) >= 0
+        assert "grounding_score" in gen_resp.json()

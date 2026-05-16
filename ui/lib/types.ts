@@ -19,19 +19,12 @@ export interface IngestResponse {
   ingested_at?: string
 }
 
-export interface Citation {
-  source_document_id: string
-  source_file_name: string
-  text_segment: string
-}
-
 export interface DraftResponse {
   draft_id: string
   status: string
   draft_content: string
-  citations: Citation[]
   source_chunks: DocumentChunks
-  grounding_confidence: number
+  grounding_score: number
   draft_type?: string
   document_ids?: string[]
   instructions?: string
@@ -75,7 +68,7 @@ export interface StoredDraft {
   draft_id: string
   draft_type: string
   status: string
-  grounding_confidence: number
+  grounding_score: number
   document_ids: string[]
   instructions?: string
   created_at: string
@@ -97,5 +90,5 @@ export interface StatsResponse {
   documents: number
   drafts: number
   skills: number
-  avg_grounding_confidence: number
+  avg_grounding_score: number
 }

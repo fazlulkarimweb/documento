@@ -72,9 +72,8 @@ interface MockDraft {
   status: string
   draft_content: string
   edited_content?: string | null
-  citations: DraftResponse["citations"]
   source_chunks: Record<string, string>
-  grounding_confidence: number
+  grounding_score: number
   document_ids: string[]
   instructions?: string
   created_at: string
@@ -182,20 +181,6 @@ The tenant is in material breach of the lease agreement dated January 1, 2024. T
 *   **Payment:** Full sum of 282,400 BDT within 7 days of the May 1, 2026 notice.
 *   **Vacation of Property:** Tenant must hand over vacant possession no later than **May 15, 2026**.`
 
-  const citations = [
-    {
-      source_document_id: opts.document_ids[0] ?? uid(),
-      source_file_name: "messy_legal_notice.pdf",
-      text_segment:
-        "Pursuant to Clause 14 (Termination for Default) of the Lease Agreement, the Landlord hereby exercises the right to terminate your tenancy effective immediately.",
-    },
-    {
-      source_document_id: opts.document_ids[0] ?? uid(),
-      source_file_name: "messy_legal_notice.pdf",
-      text_segment:
-        "Total Arrears: 270,000 BDT (excluding utility surcharges of 12,400 BDT).",
-    },
-  ]
   const source_chunks = {
     [chunkId]:
       "Pursuant to Clause 14 (Termination for Default) of the Lease Agreement, the Landlord hereby exercises the right to terminate your tenancy effective immediately.",
@@ -208,9 +193,8 @@ The tenant is in material breach of the lease agreement dated January 1, 2024. T
     status: "generated",
     draft_content,
     edited_content: null,
-    citations,
     source_chunks,
-    grounding_confidence: 0.94,
+    grounding_score: 0.94,
     document_ids: opts.document_ids,
     instructions: opts.instructions,
     created_at: now,
@@ -222,9 +206,8 @@ The tenant is in material breach of the lease agreement dated January 1, 2024. T
     draft_id,
     status: "success",
     draft_content,
-    citations,
     source_chunks,
-    grounding_confidence: 0.94,
+    grounding_score: 0.94,
     draft_type: opts.draft_type,
     document_ids: opts.document_ids,
     instructions: opts.instructions,
@@ -241,7 +224,7 @@ export async function mockListDrafts(): Promise<DraftListResponse> {
     draft_id: d.draft_id,
     draft_type: d.draft_type,
     status: d.status,
-    grounding_confidence: d.grounding_confidence,
+    grounding_score: d.grounding_score,
     document_ids: d.document_ids,
     instructions: d.instructions,
     created_at: d.created_at,
@@ -259,9 +242,8 @@ export async function mockGetDraft(id: string): Promise<DraftResponse> {
     draft_id: d.draft_id,
     status: d.status,
     draft_content: d.draft_content,
-    citations: d.citations,
     source_chunks: d.source_chunks,
-    grounding_confidence: d.grounding_confidence,
+    grounding_score: d.grounding_score,
     draft_type: d.draft_type,
     document_ids: d.document_ids,
     instructions: d.instructions,
@@ -365,11 +347,11 @@ export async function mockGetStats(): Promise<StatsResponse> {
   const avg =
     drafts.length === 0
       ? 0
-      : drafts.reduce((a, d) => a + d.grounding_confidence, 0) / drafts.length
+      : drafts.reduce((a, d) => a + d.grounding_score, 0) / drafts.length
   return {
     documents: docs.length,
     drafts: drafts.length,
     skills: skills.length,
-    avg_grounding_confidence: Number(avg.toFixed(2)),
+    avg_grounding_score: Number(avg.toFixed(2)),
   }
 }

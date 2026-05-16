@@ -215,7 +215,7 @@ app.add_middleware(
 Set `NEXT_PUBLIC_MOCK=true` to run the UI without a backend. All three API calls return canned data from `lib/mockAPI.ts`, including:
 
 - A sample ingested document (`messy_legal_notice.pdf`) with three chunks.
-- A sample generated `legal-memo` with citations and `grounding_confidence`.
+- A sample generated `legal-memo` anchored to source chunks with `grounding_score`.
 - A sample feedback response with a `learned_pattern`.
 
 This is ideal for design reviews, screenshots, and CI smoke tests.
@@ -256,7 +256,7 @@ curl -X POST 'http://localhost:8000/api/v1/drafts/generate' \
   }'
 ```
 
-Response includes `draft_id`, `draft_content` (Markdown), `citations[]`, `source_chunks{}`, and `grounding_confidence` (0–1).
+Response includes `draft_id`, `draft_content` (Markdown), `citations[]`, `source_chunks{}`, and `grounding_score` (0–1).
 
 ### 3) Submit Feedback
 

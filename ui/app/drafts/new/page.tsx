@@ -91,7 +91,7 @@ function NewDraftInner() {
       })
       mutateDrafts()
       toast.success("Draft generated", {
-        description: `${(res.grounding_confidence * 100).toFixed(0)}% grounded`,
+        description: `${(res.grounding_score * 100).toFixed(0)}% grounded`,
       })
       router.push(`/drafts/${res.draft_id}`)
     } catch (err) {

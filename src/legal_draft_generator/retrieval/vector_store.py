@@ -29,7 +29,6 @@ class VectorStore:
         """)
         
         # Table for chunks (text and metadata)
-        # Note: 'metadata' here includes the document_id/file_id
         self.db.execute("""
             CREATE TABLE IF NOT EXISTS documents (
                 id TEXT PRIMARY KEY,
@@ -52,9 +51,8 @@ class VectorStore:
                 status TEXT,
                 draft_content TEXT,
                 edited_content TEXT,
-                citations TEXT,
                 source_chunks TEXT,
-                grounding_confidence REAL,
+                grounding_score REAL,
                 document_ids TEXT,
                 instructions TEXT,
                 created_at TEXT,
@@ -91,7 +89,7 @@ class VectorStore:
         success_rate = (successes / attempts * 100) if attempts > 0 else 100.0
         
         # Retrieval & Grounding Metrics
-        avg_grounding = self.db.execute("SELECT AVG(grounding_confidence) FROM drafts").fetchone()[0] or 0.0
+        avg_grounding = self.db.execute("SELECT AVG(grounding_score) FROM drafts").fetchone()[0] or 0.0
         
         # Learning Loop Effectiveness
         feedback_events = self.db.execute("SELECT COUNT(*) FROM system_events WHERE event_type = 'feedback_applied'").fetchone()[0]
@@ -101,7 +99,7 @@ class VectorStore:
         if os.path.exists("skills"):
             skill_count = len([d for d in os.listdir("skills") if os.path.isdir(os.path.join("skills", d))])
 
-        # System Health (Healthy if last 10 events aren't mostly errors)
+        # System Health
         recent_errors = self.db.execute("""
             SELECT COUNT(*) FROM (
                 SELECT event_type FROM system_events 
@@ -119,7 +117,7 @@ class VectorStore:
             },
             "retrieval_grounding_metrics": {
                 "average_grounding_score": round(float(avg_grounding), 2),
-                "unsupported_content_prevention": 1.0 # Theoretical
+                "unsupported_content_prevention": 1.0
             },
             "draft_quality_metrics": {
                 "total_drafts": self.db.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]
@@ -217,7 +215,6 @@ class VectorStore:
             sql += " WHERE json_extract(metadata, '$.filename') LIKE ?"
             params.append(f"%{q}%")
         
-        # Count total
         count_sql = f"SELECT COUNT(*) FROM ({sql})"
         total = self.db.execute(count_sql, params).fetchone()[0]
         
@@ -228,7 +225,6 @@ class VectorStore:
         files = []
         for row in cursor:
             fid, meta_json, ingested_at = row
-            # Get chunk count
             chunk_count = self.db.execute(
                 "SELECT COUNT(*) FROM documents WHERE json_extract(metadata, '$.document_id') = ?",
                 (fid,)
@@ -265,14 +261,11 @@ class VectorStore:
         }
 
     async def delete_file(self, file_id: str):
-        # Delete vectors
         self.db.execute(
             "DELETE FROM vec_documents WHERE rowid IN (SELECT rowid FROM documents WHERE json_extract(metadata, '$.document_id') = ?)",
             (file_id,)
         )
-        # Delete chunks
         self.db.execute("DELETE FROM documents WHERE json_extract(metadata, '$.document_id') = ?", (file_id,))
-        # Delete file entry
         self.db.execute("DELETE FROM files WHERE id = ?", (file_id,))
         self.db.commit()
 
@@ -283,18 +276,17 @@ class VectorStore:
         self.db.execute("""
             INSERT OR REPLACE INTO drafts (
                 id, draft_type, status, draft_content, edited_content, 
-                citations, source_chunks, grounding_confidence, 
+                source_chunks, grounding_score, 
                 document_ids, instructions, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             draft_data["draft_id"],
             draft_data["draft_type"],
             draft_data["status"],
             draft_data["draft_content"],
             draft_data.get("edited_content"),
-            json.dumps(draft_data["citations"]),
             json.dumps(draft_data["source_chunks"]),
-            draft_data["grounding_confidence"],
+            draft_data["grounding_score"],
             json.dumps(draft_data["document_ids"]),
             draft_data.get("instructions"),
             draft_data.get("created_at", now),
@@ -304,7 +296,7 @@ class VectorStore:
         return now
 
     async def list_drafts(self, limit: int = 50, offset: int = 0, draft_type: str | None = None, document_id: str | None = None) -> Tuple[List[Dict], int]:
-        sql = "SELECT id, draft_type, status, grounding_confidence, document_ids, instructions, created_at, updated_at, draft_content FROM drafts"
+        sql = "SELECT id, draft_type, status, grounding_score, document_ids, instructions, created_at, updated_at, draft_content FROM drafts"
         where_clauses = []
         params = []
         
@@ -312,7 +304,6 @@ class VectorStore:
             where_clauses.append("draft_type = ?")
             params.append(draft_type)
         if document_id:
-            # document_ids is a JSON array
             where_clauses.append("document_ids LIKE ?")
             params.append(f"%{document_id}%")
             
@@ -328,12 +319,12 @@ class VectorStore:
         cursor = self.db.execute(sql, params)
         drafts = []
         for row in cursor:
-            did, dtype, status, conf, doc_ids, instr, created, updated, content = row
+            did, dtype, status, score, doc_ids, instr, created, updated, content = row
             drafts.append({
                 "draft_id": did,
                 "draft_type": dtype,
                 "status": status,
-                "grounding_confidence": conf,
+                "grounding_score": score,
                 "document_ids": json.loads(doc_ids),
                 "instructions": instr,
                 "created_at": created,
@@ -347,21 +338,18 @@ class VectorStore:
         if not row:
             return None
         
-        # Columns in order of _ensure_tables definition
-        # id, draft_type, status, draft_content, edited_content, citations, source_chunks, grounding_confidence, document_ids, instructions, created_at, updated_at
         return {
             "draft_id": row[0],
             "draft_type": row[1],
             "status": row[2],
             "draft_content": row[3],
             "edited_content": row[4],
-            "citations": json.loads(row[5]),
-            "source_chunks": json.loads(row[6]),
-            "grounding_confidence": row[7],
-            "document_ids": json.loads(row[8]),
-            "instructions": row[9],
-            "created_at": row[10],
-            "updated_at": row[11]
+            "source_chunks": json.loads(row[5]),
+            "grounding_score": row[6],
+            "document_ids": json.loads(row[7]),
+            "instructions": row[8],
+            "created_at": row[9],
+            "updated_at": row[10]
         }
 
     async def update_draft_content(self, draft_id: str, edited_content: str) -> Dict | None:
@@ -377,9 +365,8 @@ class VectorStore:
     async def get_stats(self) -> Dict[str, Any]:
         doc_count = self.db.execute("SELECT COUNT(*) FROM files").fetchone()[0]
         draft_count = self.db.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]
-        avg_conf = self.db.execute("SELECT AVG(grounding_confidence) FROM drafts").fetchone()[0] or 0.0
+        avg_score = self.db.execute("SELECT AVG(grounding_score) FROM drafts").fetchone()[0] or 0.0
         
-        # Count skills
         skill_count = 0
         if os.path.exists("skills"):
             skill_count = len([d for d in os.listdir("skills") if os.path.isdir(os.path.join("skills", d))])
@@ -388,5 +375,5 @@ class VectorStore:
             "documents": doc_count,
             "drafts": draft_count,
             "skills": skill_count,
-            "avg_grounding_confidence": round(float(avg_conf), 2)
+            "avg_grounding_score": round(float(avg_score), 2)
         }

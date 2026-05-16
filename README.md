@@ -11,7 +11,7 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
 ## Core Features
 - **Docling-Powered Ingestion:** Advanced parsing of multiple formats (PDF, DOCX, Images, etc.) with high-fidelity Markdown export and OCR. [Docling Project](https://github.com/docling-project/docling)
 - **Grounded Retrieval:** Integrated with **SQLite** using the **sqlite-vec** extension for efficient local vector search and chunk-level traceability.
-- **Dynamic Grounding Score:** Real-time calculation of grounding confidence based on citation coverage and density.
+- **Dynamic Grounding Score:** Real-time calculation of grounding score based on citation coverage and density.
 - **Optimized Performance:** All heavy AI models (Docling, Embeddings) are pre-loaded at application startup via FastAPI lifespan events, ensuring high-speed processing from the very first request.
 - **Manageable Agent Skills:** The system is pre-loaded with specialized skills for generating legal drafts.
  You can create, update, and delete these skills via API to tailor the agent's behavior to firm-specific standards.
@@ -112,18 +112,11 @@ curl -X 'POST' \
 {
   "draft_id": "a8c43f98-fb7d-424f-bc88-80587bdb8603",
   "status": "success",
-  "draft_content": "**MEMORANDUM By AI**\n\n concerns regarding the authenticity of a signature on page 4 [7d9ec063...].",
-  "citations": [
-    {
-      "source_document_id": "af8f23dc...",
-      "source_file_name": "messy_legal_notice.pdf",
-      "text_segment": "The signature on the ledger is smudged..."
-    }
-  ],
+  "draft_content": "**MEMORANDUM BY HARVEY**\n\n concerns regarding the authenticity of a signature on page 4 [7d9ec063...].",
   "source_chunks": {
     "7d9ec063-6dee-4093-bfc4-0393907e0f4f": "Note for Mike: Check the Harvey file ASAP..."
   },
-  "grounding_confidence": 0.94
+  "grounding_score": 0.94
 }
 ```
 

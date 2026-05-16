@@ -26,29 +26,23 @@ class DraftGenerationRequest(BaseModel):
     draft_type: str
     focus_query: Optional[str] = None
 
-class Citation(BaseModel):
-    source_document_id: str
-    source_file_name: str
-    text_segment: str
-
 class DraftGenerationResponse(BaseModel):
     draft_id: str
     status: str
     draft_content: str
-    citations: List[Citation]
     source_chunks: Dict[str, str]
     draft_type: str
     document_ids: List[str]
     instructions: Optional[str] = None
     created_at: str
     updated_at: str
-    grounding_confidence: Optional[float] = None
+    grounding_score: Optional[float] = None
 
 class DraftListItem(BaseModel):
     draft_id: str
     draft_type: str
     status: str
-    grounding_confidence: float
+    grounding_score: float
     document_ids: List[str]
     instructions: Optional[str] = None
     created_at: str
@@ -87,7 +81,7 @@ class StatsResponse(BaseModel):
     documents: int
     drafts: int
     skills: int
-    avg_grounding_confidence: float
+    avg_grounding_score: float
 
 class SkillResponse(BaseModel):
 

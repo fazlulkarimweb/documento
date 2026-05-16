@@ -86,9 +86,8 @@ async def test_draft_generation_endpoint(mock_app):
         instance = MockDrafter.return_value
         instance.generate_draft = AsyncMock(return_value={
             "draft_id": "draft-123",
-            "content": "Generated draft",
-            "citations": [],
-            "grounding_confidence": 0.9
+            "content": "Generated draft with citation [chunk-1-uuid-is-36-chars-long-here-1234].",
+            "grounding_score": 0.9
         })
         
         transport = ASGITransport(app=mock_app)
@@ -111,6 +110,7 @@ async def test_draft_generation_endpoint(mock_app):
     # Check if a known key from mock is present
     assert "chunk-1" in json_data["source_chunks"]
     assert json_data["source_chunks"]["chunk-1"] == "context text"
+    assert "grounding_score" in json_data
 
 @pytest.mark.asyncio
 @pytest.mark.unit

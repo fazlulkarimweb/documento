@@ -132,7 +132,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <Badge variant="secondary" className="ml-2 shrink-0">
-                  {(d.grounding_confidence * 100).toFixed(0)}%
+                  {(d.grounding_score * 100).toFixed(0)}%
                 </Badge>
               </Link>
             ))}

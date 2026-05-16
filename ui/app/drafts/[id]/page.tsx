@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react"
 import { mutate } from "swr"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Sparkles,
@@ -10,6 +11,7 @@ import {
   CheckCircle2,
   Quote,
   MessageSquare,
+  Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,10 +22,25 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useDraft } from "@/hooks/use-api"
-import { submitFeedback, updateDraft as apiUpdateDraft } from "@/lib/api"
+import { useDraft, useDrafts } from "@/hooks/use-api"
+import {
+  submitFeedback,
+  updateDraft as apiUpdateDraft,
+  deleteDraft as apiDeleteDraft,
+} from "@/lib/api"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -55,18 +72,37 @@ export default function DraftDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
+  const router = useRouter()
   const { draft, isLoading, mutate: mutateDraft } = useDraft(id)
+  const { mutate: mutateDrafts } = useDrafts()
 
   const [edited, setEdited] = useState("")
   const [feedback, setFeedback] = useState("")
   const [savingEdit, setSavingEdit] = useState(false)
   const [savingFeedback, setSavingFeedback] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (draft) {
       setEdited(draft.edited_content ?? draft.draft_content)
     }
   }, [draft])
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      await apiDeleteDraft(id)
+      mutateDrafts()
+      toast.success("Draft deleted")
+      router.push("/drafts")
+    } catch (err) {
+      toast.error("Failed to delete draft", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -163,15 +199,11 @@ export default function DraftDetailPage({
             <span
               className={cn(
                 "rounded-md border px-2 py-0.5 text-xs font-medium",
-                confidenceTone(draft.grounding_confidence),
+                confidenceTone(draft.grounding_score),
               )}
             >
-              {(draft.grounding_confidence * 100).toFixed(0)}% grounded
+              {(draft.grounding_score * 100).toFixed(0)}% grounded
             </span>
-            <Badge variant="secondary">
-              {draft.citations.length} citation
-              {draft.citations.length === 1 ? "" : "s"}
-            </Badge>
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
             {draft.instructions || "Draft"}
@@ -180,6 +212,35 @@ export default function DraftDetailPage({
             {draft.draft_id}
           </p>
         </div>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="icon" disabled={deleting}>
+              {deleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 text-destructive" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Draft?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently remove this <strong>{draft.draft_type}</strong> draft. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-white hover:bg-destructive/80 cursor-pointer"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -277,42 +338,6 @@ export default function DraftDetailPage({
         </div>
 
         <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Quote className="h-4 w-4" />
-                Citations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {draft.citations.length === 0 && (
-                <p className="text-sm text-muted-foreground">No citations.</p>
-              )}
-              {draft.citations.map((c, i) => (
-                <div
-                  key={i}
-                  className="rounded-md border border-border p-3 bg-card"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    <p className="text-xs font-medium truncate">
-                      {c.source_file_name}
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
-                    &ldquo;{c.text_segment}&rdquo;
-                  </p>
-                  <Link
-                    href={`/documents/${c.source_document_id}`}
-                    className="text-xs underline underline-offset-2 mt-2 inline-block"
-                  >
-                    Open source
-                  </Link>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Source Chunks</CardTitle>

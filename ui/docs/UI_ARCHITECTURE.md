@@ -86,7 +86,7 @@ app/
         ├── DraftEditor         ← Markdown editor (contentEditable)
         ├── CitationPopover     ← click [chunk-id] to inspect source
         ├── SourceChunksPanel   ← side panel listing all source_chunks
-        ├── ConfidenceBadge     ← grounding_confidence 0–1
+        ├── ConfidenceBadge     ← grounding_score 0–1
         └── FeedbackBar         ← "Save & Teach" → /feedback
 ```
 
@@ -116,7 +116,7 @@ The uploader accepts **any MIME type** and shows the backend status (`success`/`
   └─ FocusQueryInput     → focus_query (optional)
        └─ api.generateDraft({ document_ids, draft_type, focus_query })
             └─ POST /api/v1/drafts/generate
-                 └─ { draft_id, draft_content, citations[], source_chunks, grounding_confidence }
+                 └─ { draft_id, draft_content, citations[], source_chunks, grounding_score }
                       └─ navigate to /drafts/[draft_id]
 ```
 
@@ -127,7 +127,7 @@ The draft viewer parses `draft_content` (Markdown) and detects `[uuid]` tokens. 
 - **Hover** → preview `source_chunks[chunkId]`.
 - **Click** → opens `SourceChunksPanel` scrolled to that chunk and shows the originating `source_file_name`.
 
-`grounding_confidence` is rendered as a colored badge:
+`grounding_score` is rendered as a colored badge:
 
 | Range        | Color   | Meaning                       |
 | ------------ | ------- | ----------------------------- |
@@ -199,7 +199,7 @@ All types are colocated in `lib/types.ts` and mirror the backend OpenAPI schema.
 When `NEXT_PUBLIC_MOCK=true`:
 
 - In-memory `Map<documentId, IngestResponse>` seeded with the sample `messy_legal_notice.pdf` payload.
-- `generateDraft` returns the sample `legal-memo` (with citations + `grounding_confidence: 0.94`).
+- `generateDraft` returns the sample `legal-memo` (anchored to source chunks + `grounding_score: 0.94`).
 - `submitFeedback` echoes back a canned `learned_pattern` and pushes it into a local list visible on `/settings`.
 - A persistent **"MOCK MODE"** badge is rendered in `AppHeader` so operators can never confuse mock data with real data.
 

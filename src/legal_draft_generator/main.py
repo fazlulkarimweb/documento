@@ -169,14 +169,13 @@ async def generate_draft(request: DraftGenerationRequest):
             "draft_id": draft_id,
             "status": "success",
             "draft_content": result["content"],
-            "citations": [c.model_dump() if hasattr(c, "model_dump") else c for c in result["citations"]],
             "source_chunks": source_chunks_data,
             "draft_type": request.draft_type,
             "document_ids": request.document_ids,
             "instructions": request.focus_query,
             "created_at": now,
             "updated_at": now,
-            "grounding_confidence": result["grounding_confidence"]
+            "grounding_score": result["grounding_score"]
         }
         
         # Persist draft

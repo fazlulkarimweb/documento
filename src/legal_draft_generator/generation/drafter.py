@@ -3,10 +3,10 @@ from typing import List, Dict, Any
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from legal_draft_generator.config import get_settings
-from legal_draft_generator.models import Citation
 import uuid
 import os
 import json
+import re
 
 class Drafter:
     def __init__(self, mode: str = "quick"):
@@ -51,9 +51,16 @@ class Drafter:
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a legal assistant at Pearson Specter Litt. 
             Generate a {draft_type} based ONLY on the provided context. 
-            If the context is insufficient, state so. 
-            IMPORTANT: Every claim must be cited using the exact CHUNK ID in the format [CHUNK ID]. 
-            Example: \"The tenant owes 270,000 BDT [abc-123].\"
+            
+            STRICT CITATION RULES:
+            1. Every single claim or fact must be immediately followed by the exact CHUNK ID in brackets.
+            2. Format: [FULL-UUID-HERE]
+            3. DO NOT use numerical indices like [1], [2]. 
+            4. DO NOT create a 'Source' or 'Reference' section at the end.
+            5. Use the UUIDs provided in the context directly in the sentences.
+            
+            Example: \"The tenant failed to pay rent for March 2026 [5978f362-047f-44bb-9778-231202d6e8c5].\"
+            
             {learned_instructions}"""),
             ("human", "Context:\n{context}\n\nQuery: {query}")
         ])
@@ -68,28 +75,19 @@ class Drafter:
 
         content = response.content
         
-        # Improved citation parsing
-        citations = []
+        # Identify cited chunks
         unique_cited_chunks = set()
         for ctx in retrieved_context:
             chunk_id = str(ctx.get('id'))
             if f"[{chunk_id}]" in content:
                 unique_cited_chunks.add(chunk_id)
-                citations.append(Citation(
-                    source_document_id=ctx.get('document_id', 'unknown'),
-                    source_file_name=ctx.get('filename', 'unknown'),
-                    text_segment=ctx.get('text', '')[:200]
-                ))
 
-        # Calculate Real Grounding Confidence
+        # Calculate Real Grounding Score
         # Factor 1: Citation Coverage (How many chunks were used vs retrieved)
         coverage = len(unique_cited_chunks) / len(retrieved_context) if retrieved_context else 0
         
         # Factor 2: Citation Density (Presence of citations in the text)
-        # We look for [uuid] patterns. For simplicity, we count valid markers.
-        import re
-        citation_count = len(re.findall(r'\[[a-f0-9\-]{36}\]', content))
-        # Arbitrary density goal: 1 citation per 250 chars
+        citation_count = len(re.findall(r'\[[a-fA-F0-9\-]{36}\]', content))
         density = min(1.0, (citation_count * 250) / max(1, len(content)))
         
         # Combined score (weighted average)
@@ -98,6 +96,5 @@ class Drafter:
         return {
             "draft_id": str(uuid.uuid4()),
             "content": content,
-            "citations": citations,
-            "grounding_confidence": grounding_score
+            "grounding_score": grounding_score
         }
