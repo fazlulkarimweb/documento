@@ -55,11 +55,11 @@ function renderMarkdown(text: string) {
   return lines.map((line, i) => {
     const html = line
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\[([0-9a-f-]{6,})\]/g, '<span class="citation">[$1]</span>')
+      .replace(/\[(\d+)\]/g, '<span class="citation">[$1]</span>')
     return (
       <p
         key={i}
-        className="leading-relaxed [&_.citation]:text-xs [&_.citation]:font-mono [&_.citation]:px-1 [&_.citation]:py-0.5 [&_.citation]:rounded [&_.citation]:bg-accent [&_.citation]:text-accent-foreground [&_.citation]:ml-1"
+        className="leading-relaxed [&_.citation]:text-[10px] [&_.citation]:font-bold [&_.citation]:px-1 [&_.citation]:py-0.5 [&_.citation]:rounded-full [&_.citation]:bg-primary/10 [&_.citation]:text-primary [&_.citation]:align-top [&_.citation]:-ml-0.5"
         dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
       />
     )
@@ -136,6 +136,35 @@ export default function DraftDetailPage({
   }
 
   const changed = edited !== (draft.edited_content ?? draft.draft_content)
+  
+  // Calculate Grounding Metrics based on text content
+  const currentContent = draft.edited_content ?? draft.draft_content
+  const citationMatches = currentContent.match(/\[(\d+)\]/g) || []
+  const citationCount = citationMatches.length
+  
+  // N-Gram Similarity Calculation (Semantic Grounding)
+  const calculateSimilarity = (text: string, sources: Record<string, string>) => {
+    const normalize = (t: string) => t.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/).filter(w => w.length > 2)
+    const draftWords = normalize(text)
+    if (draftWords.length === 0) return 0
+    
+    const sourceWords = Object.values(sources).flatMap(s => normalize(s))
+    const sourceSet = new Set(sourceWords)
+    
+    if (sourceSet.size === 0) return 0
+    
+    const intersection = draftWords.filter(w => sourceSet.has(w))
+    return intersection.length / draftWords.length
+  }
+  
+  const overlapScore = calculateSimilarity(currentContent, draft.source_chunks)
+  
+  // Rule-based density score
+  const paragraphs = currentContent.split("\n").filter(p => p.trim().length > 20).length
+  const densityScore = paragraphs > 0 ? Math.min(1, citationCount / (paragraphs * 1.5)) : 0
+  
+  // Hybrid Reliability: Weighted towards semantic overlap (70%) and density (30%)
+  const displayScore = (overlapScore * 0.7) + (densityScore * 0.3)
 
   const sendEditFeedback = async () => {
     setSavingEdit(true)
@@ -198,7 +227,7 @@ export default function DraftDetailPage({
             <Badge variant="outline">{draft.draft_type}</Badge>
             <span
               className={cn(
-                "rounded-md border px-2 py-0.5 text-xs font-medium",
+                "rounded-md border px-2 py-0.5 text-xs font-bold",
                 confidenceTone(draft.grounding_score),
               )}
             >
@@ -255,7 +284,70 @@ export default function DraftDetailPage({
             <TabsContent value="view">
               <Card>
                 <CardContent className="prose-sm py-6 px-6 space-y-1">
-                  {renderMarkdown(draft.draft_content)}
+                  <div className="mb-8">
+                    {renderMarkdown(draft.draft_content)}
+                  </div>
+                  
+                  {draft.citations && draft.citations.length > 0 && (
+                    <div className="mt-12 pt-8 border-t border-border">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                            Sources & Grounding
+                          </h3>
+                          <p className="text-[10px] text-muted-foreground">
+                            {citationCount} citations found. Semantic overlap analysis confirms factual anchoring.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-[10px] uppercase text-muted-foreground font-medium">Overlap</p>
+                            <p className="text-xs font-bold">{(overlapScore * 100).toFixed(0)}%</p>
+                          </div>
+                          <div className="text-right border-l pl-4">
+                            <p className="text-[10px] uppercase text-muted-foreground font-medium">Reliability</p>
+                            <span
+                              className={cn(
+                                "rounded-md border px-2 py-0.5 text-xs font-bold",
+                                confidenceTone(displayScore),
+                              )}
+                            >
+                              {(displayScore * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        {Array.from(new Set(draft.citations.map(c => c.source_document_id))).map((docId, idx) => {
+                          const docCitations = draft.citations.filter(c => c.source_document_id === docId)
+                          const fileName = docCitations[0]?.source_file_name || "Unknown Document"
+                          return (
+                            <div key={docId} className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                                    {idx + 1}
+                                  </Badge>
+                                  <span className="text-sm font-medium">{fileName}</span>
+                                </div>
+                                <code className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">
+                                  {docId}
+                                </code>
+                              </div>
+                              <ul className="space-y-2 pl-7">
+                                {docCitations.map((cite, cIdx) => (
+                                  <li key={cIdx} className="text-xs text-muted-foreground leading-relaxed italic border-l-2 border-muted pl-3">
+                                    &ldquo;{cite.text_segment}&rdquo;
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

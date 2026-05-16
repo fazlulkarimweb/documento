@@ -155,11 +155,12 @@ export default function DraftsPage() {
                   <span
                     className={cn(
                       "rounded-md border px-2 py-0.5 text-xs font-medium",
-                      confidenceTone(d.grounding_score),
+                      confidenceTone(d.grounding_score ?? 0),
                     )}
                   >
-                    {(d.grounding_score * 100).toFixed(0)}% grounded
+                    {((d.grounding_score ?? 0) * 100).toFixed(0)}% grounded
                   </span>
+
                   <Badge variant="outline">
                     {d.document_ids?.length || 0} document
                     {(d.document_ids?.length || 0) === 1 ? "" : "s"}

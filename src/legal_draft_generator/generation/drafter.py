@@ -27,7 +27,7 @@ class Drafter:
         focus_query: str | None = None
     ) -> Dict[str, Any]:
         """
-        Generates a grounded draft with citations, incorporating learned patterns if available.
+        Generates a grounded draft with numerical citations resolved via a sources block.
         """
         context_text = "\n\n".join([
             f"CHUNK ID: {c.get('id')}\nDocument ID: {c.get('document_id')}\nFile: {c.get('filename')}\nContent: {c.get('text')}"
@@ -53,13 +53,14 @@ class Drafter:
             Generate a {draft_type} based ONLY on the provided context. 
             
             STRICT CITATION RULES:
-            1. Every single claim or fact must be immediately followed by the exact CHUNK ID in brackets.
-            2. Format: [FULL-UUID-HERE]
-            3. DO NOT use numerical indices like [1], [2]. 
-            4. DO NOT create a 'Source' or 'Reference' section at the end.
-            5. Use the UUIDs provided in the context directly in the sentences.
+            1. Cite every claim using bracketed numbers (e.g., [1], [2]).
+            2. At the end of the document, provide a 'Sources:' section that maps each number to its exact CHUNK ID UUID.
             
-            Example: \"The tenant failed to pay rent for March 2026 [5978f362-047f-44bb-9778-231202d6e8c5].\"
+            Format Example:
+            ... The tenant occupies Flat 4B [1]. ...
+            
+            Sources:
+            [1] 50d097e9-6943-4f05-9265-6834e6a060f1
             
             {learned_instructions}"""),
             ("human", "Context:\n{context}\n\nQuery: {query}")
@@ -75,26 +76,42 @@ class Drafter:
 
         content = response.content
         
-        # Identify cited chunks
-        unique_cited_chunks = set()
-        for ctx in retrieved_context:
-            chunk_id = str(ctx.get('id'))
-            if f"[{chunk_id}]" in content:
-                unique_cited_chunks.add(chunk_id)
+        # --- Footnote Resolution & Grounding Analysis ---
+        
+        # 1. Build Index -> UUID Map from the "Sources:" section
+        uuid_map = {}
+        sources_match = re.search(r"Sources:?[\s\S]*", content, re.IGNORECASE)
+        if sources_match:
+            sources_block = sources_match.group(0)
+            mappings = re.findall(r"\[(\d+)\]\s*([a-fA-F0-9\-]{36})", sources_block)
+            for index, chunk_id in mappings:
+                uuid_map[index] = chunk_id.lower()
 
-        # Calculate Real Grounding Score
-        # Factor 1: Citation Coverage (How many chunks were used vs retrieved)
-        coverage = len(unique_cited_chunks) / len(retrieved_context) if retrieved_context else 0
+        # 2. Identify cited chunks for coverage score
+        unique_cited_chunks = set()
         
-        # Factor 2: Citation Density (Presence of citations in the text)
-        citation_count = len(re.findall(r'\[[a-fA-F0-9\-]{36}\]', content))
-        density = min(1.0, (citation_count * 250) / max(1, len(content)))
+        # Split content into body and sources to identify numerical citations in body only
+        body_text = re.split(r"Sources:?", content, flags=re.IGNORECASE)[0]
+        numerical_citations = re.findall(r"\[(\d+)\]", body_text)
         
-        # Combined score (weighted average)
+        for index in set(numerical_citations):
+            if index in uuid_map:
+                unique_cited_chunks.add(uuid_map[index])
+
+        # 3. Calculate Real Grounding Score
+        retrieved_ids = {c.get('id').lower() for c in retrieved_context if c.get('id')}
+        valid_cited_chunks = unique_cited_chunks.intersection(retrieved_ids)
+        
+        coverage = len(valid_cited_chunks) / len(retrieved_context) if retrieved_context else 0
+        
+        # Density based on valid numerical citation occurrences in the body
+        valid_citation_count = sum(1 for idx in numerical_citations if idx in uuid_map)
+        density = min(1.0, (valid_citation_count * 250) / max(1, len(body_text)))
+        
         grounding_score = round((coverage * 0.4) + (density * 0.6), 2)
 
         return {
             "draft_id": str(uuid.uuid4()),
-            "content": content,
+            "content": content.strip(), # Return full content including Sources section
             "grounding_score": grounding_score
         }

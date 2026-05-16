@@ -84,9 +84,10 @@ async def test_draft_generation_endpoint(mock_app):
     
     with patch("legal_draft_generator.main.Drafter") as MockDrafter:
         instance = MockDrafter.return_value
+        # Simulated LLM output in the new footnote style
         instance.generate_draft = AsyncMock(return_value={
             "draft_id": "draft-123",
-            "content": "Generated draft with citation [chunk-1-uuid-is-36-chars-long-here-1234].",
+            "content": "Generated draft with citation [1].\n\nSources:\n[1] chunk-1-uuid-is-36-chars-long-here-1234",
             "grounding_score": 0.9
         })
         
