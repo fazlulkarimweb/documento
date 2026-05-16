@@ -5,7 +5,7 @@ import { Upload, Loader2, FileCheck2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ingestDocument } from "@/lib/api"
-import { useStore } from "@/lib/store"
+import { useDocuments } from "@/hooks/use-api"
 import { toast } from "sonner"
 
 export function DocumentUploader({
@@ -16,7 +16,7 @@ export function DocumentUploader({
   const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const { addDocument } = useStore()
+  const { mutate } = useDocuments()
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -25,7 +25,7 @@ export function DocumentUploader({
       try {
         for (const file of Array.from(files)) {
           const res = await ingestDocument(file)
-          addDocument({ ...res, ingested_at: new Date().toISOString() })
+          mutate() // Trigger re-fetch
           toast.success("Document ingested", {
             description: `${file.name} • ${res.metadata.page_count} page(s)`,
           })
@@ -39,7 +39,7 @@ export function DocumentUploader({
         setUploading(false)
       }
     },
-    [addDocument, onIngested],
+    [mutate, onIngested],
   )
 
   return (

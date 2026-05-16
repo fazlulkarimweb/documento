@@ -13,32 +13,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DocumentUploader } from "@/components/document-uploader"
-import { useStore } from "@/lib/store"
-import { isMock, listSkills } from "@/lib/api"
+import { useDocuments, useDrafts, useStats } from "@/hooks/use-api"
+import { isMock } from "@/lib/api"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const { documents, drafts } = useStore()
+  const { documents } = useDocuments()
+  const { drafts } = useDrafts()
+  const { stats: apiStats } = useStats()
   const router = useRouter()
-  const { data: skillsData } = useSWR("skills", () => listSkills())
-  const skillsCount = skillsData?.skills.length ?? 0
 
   const stats = [
     {
       label: "Documents Ingested",
-      value: documents.length,
+      value: apiStats?.documents ?? documents.length,
       icon: FileText,
       href: "/documents",
     },
     {
       label: "Drafts Generated",
-      value: drafts.length,
+      value: apiStats?.drafts ?? drafts.length,
       icon: FileStack,
       href: "/drafts",
     },
     {
       label: "Skills",
-      value: skillsCount,
+      value: apiStats?.skills ?? 0,
       icon: Wrench,
       href: "/skills",
     },

@@ -106,3 +106,7 @@ Scripts: Use /scripts folder.
 Node: ES6 import only, no require.
 
 Debugging: Use console.log("[v0] ...") with descriptive state info; remove once fixed.
+
+
+
+UI swap is just: delete `lib/store.tsx` + its `<StoreProvider>` wrap, and replace each `useStore()` call with an SWR hook (`useSWR("/api/v1/documents", ...)`, `useSWR("/api/v1/drafts", ...)`, `useSWR("/api/v1/drafts/" + id, ...)`). I want you to do that wiring now, gated behind `NEXT_PUBLIC_MOCK=false`,

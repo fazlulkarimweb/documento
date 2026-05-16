@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useStore } from "@/lib/store"
+import { useDrafts } from "@/hooks/use-api"
 import { cn } from "@/lib/utils"
 
 function confidenceTone(conf: number) {
@@ -21,7 +21,7 @@ function confidenceTone(conf: number) {
 }
 
 export default function DraftsPage() {
-  const { drafts } = useStore()
+  const { drafts, isLoading } = useDrafts()
 
   return (
     <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-12">
@@ -42,7 +42,15 @@ export default function DraftsPage() {
         </Button>
       </div>
 
-      {drafts.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="h-32" />
+            </Card>
+          ))}
+        </div>
+      ) : drafts.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <FileStack className="h-8 w-8 text-muted-foreground mx-auto" />
@@ -72,7 +80,7 @@ export default function DraftsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                    {d.draft_content.replace(/[*#]/g, "").slice(0, 220)}…
+                    {d.preview || "No preview available."}
                   </p>
                   <div className="flex items-center gap-2 mt-3">
                     <span
@@ -84,8 +92,8 @@ export default function DraftsPage() {
                       {(d.grounding_confidence * 100).toFixed(0)}% grounded
                     </span>
                     <Badge variant="outline">
-                      {d.citations.length} citation
-                      {d.citations.length === 1 ? "" : "s"}
+                      {d.document_ids?.length || 0} document
+                      {(d.document_ids?.length || 0) === 1 ? "" : "s"}
                     </Badge>
                   </div>
                 </CardContent>

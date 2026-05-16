@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { useStore } from "@/lib/store"
+import { useDocuments, useDrafts } from "@/hooks/use-api"
 import { generateDraft, listSkills } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -44,7 +44,8 @@ function NewDraftInner() {
   const router = useRouter()
   const params = useSearchParams()
   const preselected = params.get("document")
-  const { documents, addDraft } = useStore()
+  const { documents } = useDocuments()
+  const { mutate: mutateDrafts } = useDrafts()
   const { data: skillsData } = useSWR("skills", () => listSkills())
 
   const skillTypes = skillsData?.skills.map((s) => s.draft_type) ?? []
@@ -88,13 +89,7 @@ function NewDraftInner() {
         draft_type: trimmedType,
         instructions: instructions || undefined,
       })
-      addDraft({
-        ...res,
-        draft_type: trimmedType,
-        instructions,
-        document_ids: selected,
-        created_at: new Date().toISOString(),
-      })
+      mutateDrafts()
       toast.success("Draft generated", {
         description: `${(res.grounding_confidence * 100).toFixed(0)}% grounded`,
       })
@@ -228,7 +223,7 @@ function NewDraftInner() {
                         </p>
                       </div>
                       <Badge variant="secondary">
-                        {Object.keys(doc.chunks).length} chunks
+                        {doc.chunk_count ?? (doc.chunks ? Object.keys(doc.chunks).length : 0)} chunks
                       </Badge>
                     </label>
                   )

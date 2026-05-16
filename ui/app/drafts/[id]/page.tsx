@@ -22,8 +22,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useStore } from "@/lib/store"
-import { submitFeedback } from "@/lib/api"
+import { useDraft } from "@/hooks/use-api"
+import { submitFeedback, updateDraft as apiUpdateDraft } from "@/lib/api"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -55,8 +55,7 @@ export default function DraftDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { drafts, updateDraft } = useStore()
-  const draft = drafts.find((d) => d.draft_id === id)
+  const { draft, isLoading, mutate: mutateDraft } = useDraft(id)
 
   const [edited, setEdited] = useState("")
   const [feedback, setFeedback] = useState("")
@@ -68,6 +67,19 @@ export default function DraftDetailPage({
       setEdited(draft.edited_content ?? draft.draft_content)
     }
   }, [draft])
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-12 animate-pulse">
+        <div className="h-8 w-24 bg-muted rounded mb-4" />
+        <div className="h-12 w-3/4 bg-muted rounded mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-3 h-96 bg-muted rounded" />
+          <div className="lg:col-span-2 h-96 bg-muted rounded" />
+        </div>
+      </div>
+    )
+  }
 
   if (!draft) {
     return (
@@ -87,23 +99,22 @@ export default function DraftDetailPage({
     )
   }
 
-  const changed = edited !== draft.draft_content
+  const changed = edited !== (draft.edited_content ?? draft.draft_content)
 
   const sendEditFeedback = async () => {
     setSavingEdit(true)
     try {
-      const res = await submitFeedback({
-        draft_type: draft.draft_type,
+      await submitFeedback({
+        draft_type: draft.draft_type || "unknown",
         original_content: draft.draft_content,
         edited_content: edited,
       })
-      updateDraft(draft.draft_id, { edited_content: edited })
+      await apiUpdateDraft(draft.draft_id, { edited_content: edited })
+      mutateDraft()
       mutate("skills")
-      toast.success("Edits sent as feedback", {
-        description: res.message || "Skill updated",
-      })
+      toast.success("Edits saved and sent as feedback")
     } catch (err) {
-      toast.error("Feedback failed", {
+      toast.error("Failed to save edits", {
         description: err instanceof Error ? err.message : "Unknown error",
       })
     } finally {
@@ -118,16 +129,14 @@ export default function DraftDetailPage({
     }
     setSavingFeedback(true)
     try {
-      const noteAsEdit = `${draft.draft_content}\n\n---\nPARTNER FEEDBACK:\n${feedback}`
-      const res = await submitFeedback({
-        draft_type: draft.draft_type,
+      const noteAsEdit = `${edited}\n\n---\nPARTNER FEEDBACK:\n${feedback}`
+      await submitFeedback({
+        draft_type: draft.draft_type || "unknown",
         original_content: draft.draft_content,
         edited_content: noteAsEdit,
       })
       mutate("skills")
-      toast.success("Feedback submitted", {
-        description: res.message || "Skill updated",
-      })
+      toast.success("Feedback submitted")
       setFeedback("")
     } catch (err) {
       toast.error("Feedback failed", {
