@@ -11,6 +11,16 @@ def mock_app():
          patch("legal_draft_generator.main.learner") as mock_learner, \
          patch("legal_draft_generator.main.get_embeddings") as mock_emb:
         
+        # Ensure log_event and metrics are properly mocked as AsyncMocks
+        mock_vs.log_event = AsyncMock()
+        mock_vs.get_eval_metrics = AsyncMock(return_value={
+            "ingestion_metrics": {"total_attempts": 0, "success_rate": 100.0, "failed_docs": 0},
+            "retrieval_grounding_metrics": {"average_grounding_score": 0.9, "unsupported_content_prevention": 1.0},
+            "draft_quality_metrics": {"total_drafts": 0},
+            "learning_loop_effectiveness": {"total_feedback_events": 0, "active_skills": 0},
+            "overall_system_health": {"status": "healthy", "recent_error_count": 0, "version": "0.1.0"}
+        })
+        
         from legal_draft_generator.main import app
         yield app
 
@@ -34,6 +44,7 @@ async def test_document_ingestion_endpoint(mock_app):
     
     vector_store.add_documents = AsyncMock(return_value=["chunk-1"])
     vector_store.add_file = AsyncMock(return_value="2026-05-16T10:00:00Z")
+    vector_store.log_event = AsyncMock()
     
     transport = ASGITransport(app=mock_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -69,6 +80,7 @@ async def test_draft_generation_endpoint(mock_app):
     
     vector_store.search = AsyncMock(return_value=[{"id": "chunk-1", "text": "context text", "document_id": "doc-1", "filename": "test.pdf"}])
     vector_store.save_draft = AsyncMock(return_value="2026-05-16T10:00:00Z")
+    vector_store.log_event = AsyncMock()
     
     with patch("legal_draft_generator.main.Drafter") as MockDrafter:
         instance = MockDrafter.return_value
@@ -106,8 +118,9 @@ async def test_feedback_loop_endpoint(mock_app):
     """
     Test POST /api/v1/drafts/feedback with mocks
     """
-    from legal_draft_generator.main import learner
+    from legal_draft_generator.main import learner, vector_store
     learner.learn_from_edit = AsyncMock(return_value="# Updated Skill Content")
+    vector_store.log_event = AsyncMock()
     
     transport = ASGITransport(app=mock_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

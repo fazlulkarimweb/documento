@@ -61,6 +61,7 @@ async def ingest_document(
     file: UploadFile = File(...)
 ):
     try:
+        await vector_store.log_event("ingest_attempt", {"filename": file.filename})
         content = await file.read()
         processed = await processor.process_file(
             content, file.filename
@@ -90,6 +91,8 @@ async def ingest_document(
 
         metadata = {**processed["metadata"], "document_id": doc_id}
         
+        await vector_store.log_event("ingest_success", {"document_id": doc_id})
+        
         return DocumentIngestionResponse(
             document_id=doc_id,
             status="success",
@@ -99,6 +102,7 @@ async def ingest_document(
             ingested_at=ingested_at
         )
     except Exception as e:
+        await vector_store.log_event("ingest_error", {"filename": file.filename, "error": str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/documents", response_model=DocumentListResponse)
@@ -163,6 +167,7 @@ async def generate_draft(request: DraftGenerationRequest):
         
         return DraftGenerationResponse(**draft_response)
     except Exception as e:
+        await vector_store.log_event("draft_error", {"error": str(e), "draft_type": request.draft_type})
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/drafts", response_model=DraftListResponse)
@@ -198,12 +203,15 @@ async def submit_feedback(request: FeedbackRequest):
             request.original_content, request.edited_content, request.draft_type
         )
         
+        await vector_store.log_event("feedback_applied", {"draft_type": request.draft_type})
+        
         return FeedbackResponse(
             status="success",
             updated_skill=final_skill,
             message=f"Feedback for {request.draft_type} processed and skill updated"
         )
     except Exception as e:
+        await vector_store.log_event("feedback_error", {"draft_type": request.draft_type, "error": str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/stats", response_model=StatsResponse)
@@ -213,14 +221,8 @@ async def get_stats():
 
 @app.get("/api/v1/system/eval-metrics", response_model=SystemMetricsResponse)
 async def get_metrics():
-    # In a real app, these would come from a database tracking performance
-    return SystemMetricsResponse(
-        ingestion_metrics={"ocr_confidence": 0.95, "success_rate": 0.98},
-        retrieval_grounding_metrics={"precision@5": 0.88, "grounding_score": 0.92},
-        draft_quality_metrics={"coherence": 0.9, "relevance": 0.94},
-        learning_loop_effectiveness={"improvement_delta": 0.15},
-        overall_system_health={"status": "healthy", "version": "0.1.0"}
-    )
+    metrics = await vector_store.get_eval_metrics()
+    return SystemMetricsResponse(**metrics)
 
 # --- Skills Management APIs ---
 
