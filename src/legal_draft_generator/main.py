@@ -2,14 +2,19 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from legal_draft_generator.models import (
     DocumentIngestionResponse,
+    DocumentListResponse,
     DraftGenerationRequest,
     DraftGenerationResponse,
+    DraftListResponse,
+    DraftDetailResponse,
+    DraftPatchRequest,
     FeedbackRequest,
     FeedbackResponse,
     SkillResponse,
     SkillsListResponse,
     SkillUpdateRequest,
-    SystemMetricsResponse
+    SystemMetricsResponse,
+    StatsResponse
 )
 from legal_draft_generator.ingestion.processor import DocumentProcessor
 from legal_draft_generator.retrieval.vector_store import VectorStore
@@ -23,6 +28,7 @@ import uuid
 import asyncio
 import os
 import shutil
+from datetime import datetime
 
 app = FastAPI(title="Legal Draft Generator API", version="0.1.0")
 
@@ -48,6 +54,8 @@ def get_embeddings():
         openai_api_base="https://openrouter.ai/api/v1"
     )
 
+# --- Document Endpoints ---
+
 @app.post("/api/v1/documents", response_model=DocumentIngestionResponse, status_code=201)
 async def ingest_document(
     file: UploadFile = File(...)
@@ -65,7 +73,7 @@ async def ingest_document(
         text = processed["text"]
         chunks = text_splitter.split_text(text or " ")
         
-        # Embedding and Storing
+        # Embedding and Storing chunks
         embeddings = await embeddings_model.aembed_documents(chunks)
         metadatas = [
             {**processed["metadata"], "document_id": doc_id, "chunk_index": i}
@@ -74,10 +82,12 @@ async def ingest_document(
         
         chunk_ids = await vector_store.add_documents(chunks, metadatas, embeddings)
         
+        # Persist top-level file object
+        ingested_at = await vector_store.add_file(doc_id, processed["metadata"])
+        
         # Populate chunks dict with full content
         chunks_map = {cid: ctext for cid, ctext in zip(chunk_ids, chunks)}
 
-        # Update metadata for response
         metadata = {**processed["metadata"], "document_id": doc_id}
         
         return DocumentIngestionResponse(
@@ -85,10 +95,30 @@ async def ingest_document(
             status="success",
             metadata=metadata,
             chunks=chunks_map,
-            message="Document ingested, chunked, and indexed successfully"
+            message="Document ingested, chunked, and indexed successfully",
+            ingested_at=ingested_at
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/documents", response_model=DocumentListResponse)
+async def list_documents(limit: int = 50, offset: int = 0, q: Optional[str] = None):
+    docs, total = await vector_store.list_files(limit=limit, offset=offset, q=q)
+    return DocumentListResponse(documents=docs, total=total)
+
+@app.get("/api/v1/documents/{document_id}", response_model=DocumentIngestionResponse)
+async def get_document(document_id: str):
+    doc = await vector_store.get_file(document_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return doc
+
+@app.delete("/api/v1/documents/{document_id}")
+async def delete_document(document_id: str):
+    await vector_store.delete_file(document_id)
+    return {"status": "deleted", "document_id": document_id}
+
+# --- Draft Endpoints ---
 
 @app.post("/api/v1/drafts/generate", response_model=DraftGenerationResponse)
 async def generate_draft(request: DraftGenerationRequest):
@@ -111,16 +141,55 @@ async def generate_draft(request: DraftGenerationRequest):
         
         source_chunks_data = {str(c["id"]): c["text"] for c in context}
         
-        return DraftGenerationResponse(
-            draft_id=result["draft_id"],
-            status="success",
-            draft_content=result["content"],
-            citations=result["citations"],
-            source_chunks=source_chunks_data,
-            grounding_confidence=result["grounding_confidence"]
-        )
+        draft_id = result["draft_id"]
+        now = datetime.utcnow().isoformat() + "Z"
+        
+        draft_response = {
+            "draft_id": draft_id,
+            "status": "success",
+            "draft_content": result["content"],
+            "citations": result["citations"],
+            "source_chunks": source_chunks_data,
+            "draft_type": request.draft_type,
+            "document_ids": request.document_ids,
+            "instructions": request.focus_query,
+            "created_at": now,
+            "updated_at": now,
+            "grounding_confidence": result["grounding_confidence"]
+        }
+        
+        # Persist draft
+        await vector_store.save_draft(draft_response)
+        
+        return DraftGenerationResponse(**draft_response)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/drafts", response_model=DraftListResponse)
+async def list_drafts(limit: int = 50, offset: int = 0, draft_type: Optional[str] = None, document_id: Optional[str] = None):
+    drafts, total = await vector_store.list_drafts(limit=limit, offset=offset, draft_type=draft_type, document_id=document_id)
+    return DraftListResponse(drafts=drafts, total=total)
+
+@app.get("/api/v1/drafts/{draft_id}", response_model=DraftDetailResponse)
+async def get_draft(draft_id: str):
+    draft = await vector_store.get_draft(draft_id)
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return draft
+
+@app.patch("/api/v1/drafts/{draft_id}", response_model=DraftDetailResponse)
+async def patch_draft(draft_id: str, request: DraftPatchRequest):
+    draft = await vector_store.update_draft_content(draft_id, request.edited_content)
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return draft
+
+@app.delete("/api/v1/drafts/{draft_id}")
+async def delete_draft(draft_id: str):
+    await vector_store.delete_draft(draft_id)
+    return {"status": "deleted", "draft_id": draft_id}
+
+# --- Feedback & Stats Endpoints ---
 
 @app.post("/api/v1/drafts/feedback", response_model=FeedbackResponse)
 async def submit_feedback(request: FeedbackRequest):
@@ -136,6 +205,11 @@ async def submit_feedback(request: FeedbackRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/stats", response_model=StatsResponse)
+async def get_stats():
+    stats = await vector_store.get_stats()
+    return StatsResponse(**stats)
 
 @app.get("/api/v1/system/eval-metrics", response_model=SystemMetricsResponse)
 async def get_metrics():

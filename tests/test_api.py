@@ -33,6 +33,7 @@ async def test_document_ingestion_endpoint(mock_app):
     get_embeddings.return_value = mock_emb_inst
     
     vector_store.add_documents = AsyncMock(return_value=["chunk-1"])
+    vector_store.add_file = AsyncMock(return_value="2026-05-16T10:00:00Z")
     
     transport = ASGITransport(app=mock_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -67,6 +68,7 @@ async def test_draft_generation_endpoint(mock_app):
     get_embeddings.return_value = mock_emb_inst
     
     vector_store.search = AsyncMock(return_value=[{"id": "chunk-1", "text": "context text", "document_id": "doc-1", "filename": "test.pdf"}])
+    vector_store.save_draft = AsyncMock(return_value="2026-05-16T10:00:00Z")
     
     with patch("legal_draft_generator.main.Drafter") as MockDrafter:
         instance = MockDrafter.return_value

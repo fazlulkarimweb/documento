@@ -188,6 +188,41 @@ curl -X 'PUT' 'http://localhost:8000/api/v1/skills/legal-memo' \
 curl -X 'DELETE' 'http://localhost:8000/api/v1/skills/legal-memo'
 ```
 
+### 5. Document & Draft Management
+Manage the lifecycle of your ingested data and generated content.
+
+**List Documents:**
+```bash
+curl 'http://localhost:8000/api/v1/documents?limit=10&offset=0'
+```
+
+**Get Document Detail (including chunks):**
+```bash
+curl 'http://localhost:8000/api/v1/documents/doc-uuid-here'
+```
+
+**Delete Document:**
+```bash
+curl -X 'DELETE' 'http://localhost:8000/api/v1/documents/doc-uuid-here'
+```
+
+**List Drafts:**
+```bash
+curl 'http://localhost:8000/api/v1/drafts?draft_type=legal-memo'
+```
+
+**Patch Draft (Save Edits):**
+```bash
+curl -X 'PATCH' 'http://localhost:8000/api/v1/drafts/draft-uuid-here' \
+  -H 'Content-Type: application/json' \
+  -d '{"edited_content": "Revised legal memorandum text..."}'
+```
+
+**Get System Stats:**
+```bash
+curl 'http://localhost:8000/api/v1/stats'
+```
+
 ## Architecture Overview
 The system is built on a modular, high-performance pipeline designed for legal intelligence:
 
