@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from documento.models import (
+from legal_draft_generator.models import (
     DocumentIngestionResponse,
     DraftGenerationRequest,
     DraftGenerationResponse,
@@ -8,18 +8,18 @@ from documento.models import (
     FeedbackResponse,
     SystemMetricsResponse
 )
-from documento.ingestion.processor import DocumentProcessor
-from documento.retrieval.vector_store import VectorStore
-from documento.generation.drafter import Drafter
-from documento.feedback.learner import Learner
-from documento.config import get_settings
+from legal_draft_generator.ingestion.processor import DocumentProcessor
+from legal_draft_generator.retrieval.vector_store import VectorStore
+from legal_draft_generator.generation.drafter import Drafter
+from legal_draft_generator.feedback.learner import Learner
+from legal_draft_generator.config import get_settings
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Optional, List
 import uuid
 import asyncio
 
-app = FastAPI(title="Documento API", version="0.1.0")
+app = FastAPI(title="Legal Draft Generator API", version="0.1.0")
 
 # Enable CORS for all origins
 app.add_middleware(

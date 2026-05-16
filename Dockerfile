@@ -29,4 +29,4 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "documento.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "legal_draft_generator.main:app", "--host", "0.0.0.0", "--port", "8000"]

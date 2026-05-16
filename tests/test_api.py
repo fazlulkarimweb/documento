@@ -5,13 +5,13 @@ from unittest.mock import MagicMock, patch, AsyncMock
 
 @pytest.fixture
 def mock_app():
-    # We patch the instances that were already created in documento.main
-    with patch("documento.main.processor") as mock_proc, \
-         patch("documento.main.vector_store") as mock_vs, \
-         patch("documento.main.learner") as mock_learner, \
-         patch("documento.main.get_embeddings") as mock_emb:
+    # We patch the instances that were already created in legal_draft_generator.main
+    with patch("legal_draft_generator.main.processor") as mock_proc, \
+         patch("legal_draft_generator.main.vector_store") as mock_vs, \
+         patch("legal_draft_generator.main.learner") as mock_learner, \
+         patch("legal_draft_generator.main.get_embeddings") as mock_emb:
         
-        from documento.main import app
+        from legal_draft_generator.main import app
         yield app
 
 @pytest.mark.asyncio
@@ -20,7 +20,7 @@ async def test_document_ingestion_endpoint(mock_app):
     """
     Test POST /api/v1/documents with mocks
     """
-    from documento.main import processor, vector_store, get_embeddings
+    from legal_draft_generator.main import processor, vector_store, get_embeddings
     
     processor.process_file = AsyncMock(return_value={
         "text": "test text",
@@ -60,7 +60,7 @@ async def test_draft_generation_endpoint(mock_app):
     """
     Test POST /api/v1/drafts/generate with mocks
     """
-    from documento.main import vector_store, get_embeddings
+    from legal_draft_generator.main import vector_store, get_embeddings
     
     mock_emb_inst = AsyncMock()
     mock_emb_inst.aembed_query.return_value = [0.1] * 1536
@@ -68,7 +68,7 @@ async def test_draft_generation_endpoint(mock_app):
     
     vector_store.search = AsyncMock(return_value=[{"id": "chunk-1", "text": "context text", "document_id": "doc-1", "filename": "test.pdf"}])
     
-    with patch("documento.main.Drafter") as MockDrafter:
+    with patch("legal_draft_generator.main.Drafter") as MockDrafter:
         instance = MockDrafter.return_value
         instance.generate_draft = AsyncMock(return_value={
             "draft_id": "draft-123",
@@ -104,7 +104,7 @@ async def test_feedback_loop_endpoint(mock_app):
     """
     Test POST /api/v1/drafts/feedback with mocks
     """
-    from documento.main import learner
+    from legal_draft_generator.main import learner
     learner.learn_from_edit = AsyncMock(return_value={"pattern": "learned"})
     
     transport = ASGITransport(app=mock_app)

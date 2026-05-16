@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import List, Dict, Any
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from documento.config import get_settings
-from documento.models import Citation
+from legal_draft_generator.config import get_settings
+from legal_draft_generator.models import Citation
 import uuid
 import os
 import json

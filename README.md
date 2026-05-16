@@ -1,7 +1,7 @@
-# Documento - AI Engineer Assessment
+# Legal Draft Generator 
 
 ## Introduction
-Documento is a production-ready legal document intelligence system built for Pearson Specter Litt. It specializes in processing "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
+Legal Draft Generator is a production-ready legal document intelligence system built for Pearson Specter Litt. It specializes in processing "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
 
 ## Video Presentation
 Here is the video part 1: Intro: [Intro Video Link](https://www.loom.com/share/c209704d540942c6b41c46dabe621170)
@@ -41,7 +41,7 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
     ```
 6.  **Run the application:**
     ```bash
-    uvicorn documento.main:app --reload
+    uvicorn legal_draft_generator.main:app --reload
     ```
 7.  **Run tests:**
     ```bash
@@ -53,11 +53,11 @@ The system is containerized for easy deployment and environment consistency.
 
 1.  **Build the Docker image:**
     ```bash
-    docker build -t documento-app .
+    docker build -t legal_draft_generator-app .
     ```
 2.  **Run the container:**
     ```bash
-    docker run -p 8000:8000 --env-file .env documento-app
+    docker run -p 8000:8000 --env-file .env legal_draft_generator-app
     ```
     *Note: Ensure your `.env` file is present in the root directory before running.*
 

@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - `pyproject.toml` with dependencies.
 - `README.md` with setup instructions and architecture overview.
 - Basic directory structure (`src/`, `tests/`, `data/`, `memory/`).
-- **Production-ready FastAPI application** in `src/documento/main.py`.
+- **Production-ready FastAPI application** in `src/legal_draft_generator/main.py`.
 - **Document Ingestion** with Docling
 - **Grounded Retrieval** using Qdrant vector database.
 - **Draft Generation** using OpenRouter (OpenAI models) with citation logic.

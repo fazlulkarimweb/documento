@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Dict, Any, Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from documento.config import get_settings
+from legal_draft_generator.config import get_settings
 import json
 import os
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
-from documento.config import get_settings
+from legal_draft_generator.config import get_settings
 from typing import List, Dict, Any
 import uuid
 
