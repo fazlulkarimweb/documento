@@ -1,79 +1,112 @@
 from __future__ import annotations
-from qdrant_client import QdrantClient
-from qdrant_client.http import models as rest
+import sqlite3
+import sqlite_vec
+import json
 from legal_draft_generator.config import get_settings
 from typing import List, Dict, Any
 import uuid
+import struct
 
 class VectorStore:
     def __init__(self):
         settings = get_settings()
-        if settings.QDRANT_CLUSTER == ":memory:":
-            self.client = QdrantClient(":memory:")
-        else:
-            self.client = QdrantClient(
-                url=settings.QDRANT_CLUSTER,
-                api_key=settings.QDRANT_API_KEY
-            )
-        self.collection_name = "documents"
-        self._ensure_collection()
+        self.db = sqlite3.connect(settings.DB_PATH)
+        self.db.enable_load_extension(True)
+        sqlite_vec.load(self.db)
+        self.db.enable_load_extension(False)
+        self._ensure_tables()
 
-    def _ensure_collection(self):
-        collections = self.client.get_collections().collections
-        exists = any(c.name == self.collection_name for c in collections)
-        if not exists:
-            self.client.create_collection(
-                collection_name=self.collection_name,
-                vectors_config=rest.VectorParams(
-                    size=1536,  # Assuming OpenAI embeddings
-                    distance=rest.Distance.COSINE
-                )
+    def _ensure_tables(self):
+        # Table for text and metadata
+        self.db.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id TEXT PRIMARY KEY,
+                text TEXT,
+                metadata TEXT
             )
+        """)
         
-        # Always try to ensure the payload index exists for efficient filtering
-        # This handles cases where the collection already exists but lacks the index
-        collection_info = self.client.get_collection(self.collection_name)
-        if "document_id" not in collection_info.payload_schema:
-            self.client.create_payload_index(
-                collection_name=self.collection_name,
-                field_name="document_id",
-                field_schema=rest.PayloadSchemaType.KEYWORD
-            )
+        # Virtual table for vector search (sqlite-vec v0.1.x)
+        # Using a check to see if it exists because CREATE VIRTUAL TABLE doesn't support IF NOT EXISTS in all versions easily
+        try:
+            self.db.execute("SELECT * FROM vec_documents LIMIT 0")
+        except sqlite3.OperationalError:
+            self.db.execute("CREATE VIRTUAL TABLE vec_documents USING vec0(embedding float[1536])")
+        
+        self.db.commit()
 
     async def add_documents(self, texts: List[str], metadatas: List[Dict[str, Any]], embeddings: List[List[float]]) -> List[str]:
-        points = []
         point_ids = []
         for text, meta, emb in zip(texts, metadatas, embeddings):
-            point_id = str(uuid.uuid4())
-            point_ids.append(point_id)
-            points.append(rest.PointStruct(
-                id=point_id,
-                vector=emb,
-                payload={**meta, "text": text}
-            ))
+            doc_id = str(uuid.uuid4())
+            point_ids.append(doc_id)
+            
+            # Insert into documents table
+            # doc_id is a string, but sqlite-vec rowid must be integer. 
+            # We'll use a mapping or just let sqlite assign a rowid and store our UUID in the table.
+            cursor = self.db.execute(
+                "INSERT INTO documents (id, text, metadata) VALUES (?, ?, ?)",
+                (doc_id, text, json.dumps(meta))
+            )
+            rowid = cursor.lastrowid
+            
+            # Convert embedding to bytes
+            emb_bytes = struct.pack(f"{len(emb)}f", *emb)
+            
+            # Insert into vector table
+            self.db.execute(
+                "INSERT INTO vec_documents (rowid, embedding) VALUES (?, ?)",
+                (rowid, emb_bytes)
+            )
         
-        self.client.upsert(
-            collection_name=self.collection_name,
-            points=points
-        )
+        self.db.commit()
         return point_ids
 
     async def search(self, query_vector: List[float], limit: int = 5, filter_dict: Dict | None = None) -> List[Dict[str, Any]]:
-        query_filter = None
-        if filter_dict:
-            must_filters = []
-            for k, v in filter_dict.items():
-                if isinstance(v, list):
-                    must_filters.append(rest.FieldCondition(key=k, match=rest.MatchAny(any=v)))
-                else:
-                    must_filters.append(rest.FieldCondition(key=k, match=rest.MatchValue(value=v)))
-            query_filter = rest.Filter(must=must_filters)
-
-        results = self.client.query_points(
-            collection_name=self.collection_name,
-            query=query_vector,
-            limit=limit,
-            query_filter=query_filter
-        )
+        # Convert query vector to bytes
+        query_bytes = struct.pack(f"{len(query_vector)}f", *query_vector)
         
-        return [{"id": r.id, **r.payload} for r in results.points]
+        # We use a nested subquery for the KNN search to ensure sqlite-vec optimizer sees the LIMIT
+        # and to handle filtering correctly.
+        
+        inner_sql = "SELECT rowid, distance FROM vec_documents WHERE embedding MATCH ? "
+        inner_params = [query_bytes]
+        
+        if filter_dict:
+            for k, v in filter_dict.items():
+                if k == "document_id":
+                    # document_id is stored inside the metadata JSON for each chunk
+                    if isinstance(v, list):
+                        placeholders = ",".join(["?"] * len(v))
+                        inner_sql += f" AND rowid IN (SELECT rowid FROM documents WHERE json_extract(metadata, '$.document_id') IN ({placeholders}))"
+                        inner_params.extend(v)
+                    else:
+                        inner_sql += " AND rowid IN (SELECT rowid FROM documents WHERE json_extract(metadata, '$.document_id') = ?)"
+                        inner_params.append(v)
+                else:
+                    # Generic JSON filter
+                    inner_sql += f" AND rowid IN (SELECT rowid FROM documents WHERE json_extract(metadata, '$.{k}') = ?)"
+                    inner_params.append(v)
+        
+        inner_sql += " LIMIT ?"
+        inner_params.append(limit)
+        
+        sql = f"""
+            SELECT 
+                d.id, d.text, d.metadata, v.distance
+            FROM ({inner_sql}) v
+            JOIN documents d ON v.rowid = d.rowid
+            ORDER BY v.distance
+        """
+        
+        cursor = self.db.execute(sql, inner_params)
+        results = []
+        for row in cursor:
+            doc_id, text, metadata_json, distance = row
+            results.append({
+                "id": doc_id,
+                "text": text,
+                **json.loads(metadata_json)
+            })
+            
+        return results

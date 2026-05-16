@@ -21,7 +21,7 @@ dependencies = [
     "pytesseract",
     "pypdf",
     "chromadb",
-    "qdrant-client",
+    "sqlite-vec",
     "tiktoken",
     "fastapi",
     "uvicorn",

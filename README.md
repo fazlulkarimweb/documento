@@ -10,7 +10,7 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
 
 ## Core Features
 - **Docling-Powered Ingestion:** Advanced parsing of multiple formats (PDF, DOCX, Images, etc.) with high-fidelity Markdown export and OCR. [Docling Project](https://github.com/docling-project/docling)
-- **Grounded Retrieval:** Integrated with Qdrant vector database for precise evidence retrieval with chunk-level traceability.
+- **Grounded Retrieval:** Integrated with **SQLite** using the **sqlite-vec** extension for efficient local vector search and chunk-level traceability.
 - **Dynamic Grounding Score:** Real-time calculation of grounding confidence based on citation coverage and density.
 - **Type-Centric Learning Loop:** Extracts reusable patterns from operator edits and injects them into future drafts of the same type.
 
@@ -33,8 +33,7 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
     ```
 5.  **Configure `.env`:**
     ```env
-    QDRANT_API_KEY=your_key
-    QDRANT_CLUSTER=your_cluster_url_or_:memory:
+    DB_PATH=legal_drafts.db
     OPENROUTER_API_KEY=your_key
     QUICK_THINK_LLM=openai/gpt-4o-mini
     DEEP_THINK_LLM=openai/gpt-4o
@@ -151,12 +150,12 @@ curl -X 'POST' \
 The system is built on a modular, high-performance pipeline designed for legal intelligence:
 
 1.  **Ingestion (Docling):** Uses [Docling](https://github.com/docling-project/docling) for advanced parsing of PDFs, images, and complex office formats. It provides high-fidelity Markdown export and OCR, essential for handling the "messy" documents typical of Pearson Specter Litt's casework.
-2.  **Vector Store (Qdrant):** Documents are chunked and indexed in **Qdrant**. We utilize keyword payload indexing for `document_id` to ensure strict, isolated retrieval during the RAG process.
-3.  **Grounded Drafting (OpenRouter):** Generation is handled via **OpenRouter**, allowing us to utilize powerful models like GPT-4o or Claude 3. All generated content is strictly cited against specific chunk IDs from the vector store. I am using gemini-3-flash here.
+2.  **Vector Store (SQLite + sqlite-vec):** Documents are chunked and indexed in a local **SQLite** database. We utilize the **sqlite-vec** extension for high-performance vector search, ensuring strict, isolated retrieval during the RAG process.
+3.  **Grounded Drafting (OpenRouter):** Generation is handled via **OpenRouter**, allowing us to utilize powerful models like GPT-4o or Claude 3. All generated content is strictly cited against specific chunk IDs from the local database.
 4.  **Learning Loop (Feedback Analysis):** An asynchronous-ready process analyzes operator edits to extract reusable patterns, which are then injected into future generations to improve style and accuracy.
 
 **Extensibility:**
-The architecture is intentionally modular. While it currently integrates Docling, Qdrant, and OpenRouter, the system is designed to easily incorporate additional APIs (e.g., custom OCR services, legal database connectors, or alternative LLM providers) as requirements evolve.
+The architecture is intentionally modular. While it currently integrates Docling, SQLite, and OpenRouter, the system is designed to easily incorporate additional APIs (e.g., custom OCR services, legal database connectors, or alternative LLM providers) as requirements evolve.
 
 ## Assumptions & Tradeoffs
 
@@ -167,7 +166,7 @@ The architecture is intentionally modular. While it currently integrates Docling
 
 **Tradeoffs:**
 - **Docling vs. Simple PDF Parsers:** Docling provides superior handling of complex legal layouts, tables, and noisy inputs, but it is computationally heavier and slower than simpler tools like PyPDF. This tradeoff prioritizes extraction quality over sheer ingestion speed, which is crucial for messy legal documents.
-- **Local JSON Memory vs. Relational Database:** Learned patterns are currently persisted as local JSON files (`patterns_{draft_type}.json`). This allows for transparency and simplicity in this assessment but would need to be migrated to a structured relational database (e.g., PostgreSQL) for transactional safety and scalability in a full production environment.
+- **Local SQLite vs. Vector Cloud:** Using SQLite with `sqlite-vec` provides a self-contained, low-latency solution that avoids external API calls for vector search. This tradeoff simplifies infrastructure and improves privacy but would require vertical scaling of the host machine for extremely large datasets.
 - **Chunk-Level vs. Page-Level Grounding:** The system uses 1000-character recursive chunking for grounding. While this improves semantic search precision over page-level retrieval, it can occasionally split related context across multiple chunks.
 - **Real-time Scoring vs. LLM-as-a-Judge:** Grounding confidence is calculated using a fast heuristic algorithm (citation density and coverage) rather than an LLM-as-a-Judge approach. This reduces latency and API costs but provides a proxy metric rather than deep semantic verification of grounding accuracy.
 

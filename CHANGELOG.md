@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Basic directory structure (`src/`, `tests/`, `data/`, `memory/`).
 - **Production-ready FastAPI application** in `src/legal_draft_generator/main.py`.
 - **Document Ingestion** with Docling
-- **Grounded Retrieval** using Qdrant vector database.
+- **Grounded Retrieval** using SQLite with `sqlite-vec` extension (replaced Qdrant).
 - **Draft Generation** using OpenRouter (OpenAI models) with citation logic.
 - **Learning Loop** to capture operator edits and extract reusable patterns.
 - **System Metrics** endpoint for evaluation tracking.

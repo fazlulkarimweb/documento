@@ -1,3 +1,6 @@
+# SQLITE Database 
+legal_drafts.db 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
