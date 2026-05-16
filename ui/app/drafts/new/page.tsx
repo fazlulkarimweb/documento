@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+import { DraftTypeCombobox } from "@/components/draft-type-combobox"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
@@ -38,6 +38,16 @@ const PRESET_DRAFT_TYPES = [
   "engagement-letter",
   "opinion-letter",
   "litigation-strategy",
+  "complaint-civil",
+  "answer-to-complaint",
+  "subpoena-duces-tecum",
+  "deposition-notice",
+  "summary-judgment-motion",
+  "pretrial-statement",
+  "jury-instructions",
+  "appeal-brief",
+  "amicus-curiae-brief",
+  "writ-of-certiorari",
 ]
 
 function NewDraftInner() {
@@ -130,19 +140,11 @@ function NewDraftInner() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="draft-type">Type</Label>
-              <Input
-                id="draft-type"
-                list="draft-type-options"
-                placeholder="e.g. legal-memo or any custom type"
+              <DraftTypeCombobox
                 value={draftType}
-                onChange={(e) => setDraftType(e.target.value)}
-                autoComplete="off"
+                onChange={setDraftType}
+                options={suggestions}
               />
-              <datalist id="draft-type-options">
-                {suggestions.map((t) => (
-                  <option key={t} value={t} />
-                ))}
-              </datalist>
               {skillTypes.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground self-center mr-1">

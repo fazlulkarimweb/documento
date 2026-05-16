@@ -12,6 +12,9 @@ import {
   Quote,
   MessageSquare,
   Trash2,
+  Copy,
+  Check,
+  ClipboardCheck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -166,6 +169,25 @@ export default function DraftDetailPage({
   // Hybrid Reliability: Weighted towards semantic overlap (70%) and density (30%)
   const displayScore = (overlapScore * 0.7) + (densityScore * 0.3)
 
+  const handleCopy = (includeReferences: boolean) => {
+    let text = draft.edited_content ?? draft.draft_content
+    
+    if (!includeReferences) {
+      // 1. Remove inline citations [1], [2], etc.
+      text = text.replace(/\[\d+\]/g, "")
+      // 2. Remove multiple spaces left behind by deleted citations
+      text = text.replace(/\s{2,}/g, " ")
+      // 3. Strip everything from "Source:" or "Reference:" onwards
+      const sourceMatch = text.match(/(?:\n|^)\s*(?:\*\*\*|---)?\s*(?:Source|Reference)s?:/i)
+      if (sourceMatch && sourceMatch.index !== undefined) {
+        text = text.slice(0, sourceMatch.index)
+      }
+    }
+
+    navigator.clipboard.writeText(text.trim())
+    toast.success(includeReferences ? "Copied with references" : "Copied without references")
+  }
+
   const sendEditFeedback = async () => {
     setSavingEdit(true)
     try {
@@ -275,12 +297,34 @@ export default function DraftDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-4">
           <Tabs defaultValue="view">
-            <TabsList>
-              <TabsTrigger value="view">View</TabsTrigger>
-              <TabsTrigger value="edit">
-                Edit{changed ? " •" : ""}
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between mb-2">
+              <TabsList>
+                <TabsTrigger value="view">View</TabsTrigger>
+                <TabsTrigger value="edit">
+                  Edit{changed ? " •" : ""}
+                </TabsTrigger>
+              </TabsList>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => handleCopy(true)}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 gap-1.5 text-xs bg-primary/5 hover:bg-primary/10 border-primary/20"
+                  onClick={() => handleCopy(false)}
+                >
+                  <ClipboardCheck className="h-3.5 w-3.5 text-primary" />
+                  Copy without reference
+                </Button>
+              </div>
+            </div>
             <TabsContent value="view">
               <Card>
                 <CardContent className="prose-sm py-6 px-6 space-y-1">
