@@ -1,10 +1,11 @@
 "use client"
 
+import useSWR from "swr"
 import Link from "next/link"
 import {
   FileText,
   FileStack,
-  Sparkles,
+  Wrench,
   ArrowRight,
   ShieldCheck,
 } from "lucide-react"
@@ -13,12 +14,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DocumentUploader } from "@/components/document-uploader"
 import { useStore } from "@/lib/store"
-import { isMock } from "@/lib/api"
+import { isMock, listSkills } from "@/lib/api"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const { documents, drafts, patterns } = useStore()
+  const { documents, drafts } = useStore()
   const router = useRouter()
+  const { data: skillsData } = useSWR("skills", () => listSkills())
+  const skillsCount = skillsData?.skills.length ?? 0
 
   const stats = [
     {
@@ -34,10 +37,10 @@ export default function DashboardPage() {
       href: "/drafts",
     },
     {
-      label: "Patterns Learned",
-      value: patterns.length,
-      icon: Sparkles,
-      href: "/patterns",
+      label: "Skills",
+      value: skillsCount,
+      icon: Wrench,
+      href: "/skills",
     },
   ]
 

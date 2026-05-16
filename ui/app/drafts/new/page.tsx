@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, Suspense } from "react"
+import useSWR from "swr"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, Loader2, Sparkles, FileText } from "lucide-react"
+import { ArrowLeft, Loader2, Sparkles, FileText, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,25 +15,29 @@ import {
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { useStore } from "@/lib/store"
-import { generateDraft } from "@/lib/api"
+import { generateDraft, listSkills } from "@/lib/api"
 import { toast } from "sonner"
-import type { DraftType } from "@/lib/types"
 
-const DRAFT_TYPES: { value: DraftType; label: string; hint: string }[] = [
-  { value: "legal-memo", label: "Legal Memo", hint: "Structured internal memorandum" },
-  { value: "case-summary", label: "Case Summary", hint: "Concise factual summary of a matter" },
-  { value: "demand-letter", label: "Demand Letter", hint: "Formal demand to a counterparty" },
-  { value: "client-brief", label: "Client Brief", hint: "Plain-language briefing for clients" },
+const PRESET_DRAFT_TYPES = [
+  "legal-memo",
+  "case-summary",
+  "demand-letter",
+  "client-brief",
+  "contract-review",
+  "settlement-agreement",
+  "cease-and-desist",
+  "discovery-request",
+  "motion-to-dismiss",
+  "affidavit",
+  "power-of-attorney",
+  "nda",
+  "engagement-letter",
+  "opinion-letter",
+  "litigation-strategy",
 ]
 
 function NewDraftInner() {
@@ -40,9 +45,15 @@ function NewDraftInner() {
   const params = useSearchParams()
   const preselected = params.get("document")
   const { documents, addDraft } = useStore()
+  const { data: skillsData } = useSWR("skills", () => listSkills())
 
-  const [draftType, setDraftType] = useState<DraftType>("legal-memo")
-  const [focusQuery, setFocusQuery] = useState("")
+  const skillTypes = skillsData?.skills.map((s) => s.draft_type) ?? []
+  const suggestions = Array.from(
+    new Set([...skillTypes, ...PRESET_DRAFT_TYPES]),
+  )
+
+  const [draftType, setDraftType] = useState("legal-memo")
+  const [instructions, setInstructions] = useState("")
   const [selected, setSelected] = useState<string[]>(
     preselected ? [preselected] : [],
   )
@@ -65,17 +76,22 @@ function NewDraftInner() {
       toast.error("Select at least one source document")
       return
     }
+    const trimmedType = draftType.trim()
+    if (!trimmedType) {
+      toast.error("Enter a draft type")
+      return
+    }
     setSubmitting(true)
     try {
       const res = await generateDraft({
         document_ids: selected,
-        draft_type: draftType,
-        focus_query: focusQuery || undefined,
+        draft_type: trimmedType,
+        instructions: instructions || undefined,
       })
       addDraft({
         ...res,
-        draft_type: draftType,
-        focus_query: focusQuery,
+        draft_type: trimmedType,
+        instructions,
         document_ids: selected,
         created_at: new Date().toISOString(),
       })
@@ -105,7 +121,7 @@ function NewDraftInner() {
         Generate Draft
       </h1>
       <p className="text-muted-foreground mb-6">
-        Select sources, pick a draft type, and optionally focus the output.
+        Pick a draft type, write your instructions, and select sources.
       </p>
 
       <div className="space-y-6">
@@ -113,38 +129,59 @@ function NewDraftInner() {
           <CardHeader>
             <CardTitle className="text-base">Draft Type</CardTitle>
             <CardDescription>
-              Choose the kind of document to generate.
+              Type a custom name or pick from existing skills and presets.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Select
-              value={draftType}
-              onValueChange={(v) => setDraftType(v as DraftType)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DRAFT_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    <div className="flex flex-col">
-                      <span>{t.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {t.hint}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <div className="space-y-2">
-              <Label htmlFor="focus">Focus query (optional)</Label>
+              <Label htmlFor="draft-type">Type</Label>
               <Input
-                id="focus"
-                placeholder="e.g. Summarize arrears, deadlines, and breach clauses"
-                value={focusQuery}
-                onChange={(e) => setFocusQuery(e.target.value)}
+                id="draft-type"
+                list="draft-type-options"
+                placeholder="e.g. legal-memo or any custom type"
+                value={draftType}
+                onChange={(e) => setDraftType(e.target.value)}
+                autoComplete="off"
               />
+              <datalist id="draft-type-options">
+                {suggestions.map((t) => (
+                  <option key={t} value={t} />
+                ))}
+              </datalist>
+              {skillTypes.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground self-center mr-1">
+                    Skills
+                  </span>
+                  {skillTypes.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setDraftType(t)}
+                      className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-xs hover:bg-accent transition-colors"
+                    >
+                      <Wrench className="h-3 w-3" />
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="instructions">Instructions / Prompt</Label>
+              <Textarea
+                id="instructions"
+                rows={6}
+                placeholder={`Describe what you want. For example:\n\n"Draft a memorandum summarizing the arrears, breach clauses, and the May 15 vacation deadline. Use active voice in the background section and sign off as Harvey."`}
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                className="resize-y"
+              />
+              <p className="text-xs text-muted-foreground">
+                Be specific — these instructions guide tone, structure, and what
+                to emphasize.
+              </p>
             </div>
           </CardContent>
         </Card>

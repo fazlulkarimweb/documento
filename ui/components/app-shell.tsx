@@ -7,7 +7,7 @@ import {
   FileStack,
   LayoutDashboard,
   Scale,
-  Sparkles,
+  Wrench,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { isMock } from "@/lib/api"
@@ -17,7 +17,7 @@ const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/drafts", label: "Drafts", icon: FileStack },
-  { href: "/patterns", label: "Learned Patterns", icon: Sparkles },
+  { href: "/skills", label: "Skills", icon: Wrench },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {

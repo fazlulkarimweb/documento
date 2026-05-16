@@ -1,4 +1,4 @@
-export type DraftType = "legal-memo" | "case-summary" | "demand-letter" | "client-brief"
+export type DraftType = string
 
 export interface DocumentChunks {
   [chunkId: string]: string
@@ -16,6 +16,7 @@ export interface IngestResponse {
   metadata: DocumentMetadata
   chunks: DocumentChunks
   message: string
+  ingested_at?: string
 }
 
 export interface Citation {
@@ -31,35 +32,70 @@ export interface DraftResponse {
   citations: Citation[]
   source_chunks: DocumentChunks
   grounding_confidence: number
+  draft_type?: string
+  document_ids?: string[]
+  instructions?: string
+  edited_content?: string | null
+  created_at?: string
+  updated_at?: string
 }
 
 export interface FeedbackRequest {
-  draft_type: DraftType | string
+  draft_type: string
   original_content: string
   edited_content: string
 }
 
-export interface LearnedPattern {
-  pattern_type: string
-  description: string
-  suggested_instruction: string
-  draft_type: string
-}
-
 export interface FeedbackResponse {
   status: string
-  learned_pattern: LearnedPattern
+  updated_skill?: string
   message: string
 }
 
-export interface StoredDocument extends IngestResponse {
+export interface Skill {
+  draft_type: string
+  content: string
+  metadata?: Record<string, unknown> | null
+}
+
+export interface SkillsListResponse {
+  skills: Skill[]
+}
+
+export interface StoredDocument {
+  document_id: string
+  status: string
+  metadata: DocumentMetadata
+  chunks?: DocumentChunks
+  chunk_count: number
   ingested_at: string
 }
 
-export interface StoredDraft extends DraftResponse {
-  draft_type: DraftType | string
-  focus_query?: string
+export interface StoredDraft {
+  draft_id: string
+  draft_type: string
+  status: string
+  grounding_confidence: number
   document_ids: string[]
+  instructions?: string
   created_at: string
-  edited_content?: string
+  updated_at: string
+  preview?: string
+}
+
+export interface DocumentListResponse {
+  documents: StoredDocument[]
+  total: number
+}
+
+export interface DraftListResponse {
+  drafts: StoredDraft[]
+  total: number
+}
+
+export interface StatsResponse {
+  documents: number
+  drafts: number
+  skills: number
+  avg_grounding_confidence: number
 }

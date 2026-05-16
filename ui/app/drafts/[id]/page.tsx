@@ -1,6 +1,7 @@
 "use client"
 
 import { use, useEffect, useState } from "react"
+import { mutate } from "swr"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -8,11 +9,13 @@ import {
   Loader2,
   CheckCircle2,
   Quote,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -31,7 +34,6 @@ function confidenceTone(conf: number) {
 }
 
 function renderMarkdown(text: string) {
-  // Lightweight inline renderer: bold + headings + list bullets, preserving citations
   const lines = text.split("\n")
   return lines.map((line, i) => {
     const html = line
@@ -53,11 +55,13 @@ export default function DraftDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { drafts, updateDraft, addPattern } = useStore()
+  const { drafts, updateDraft } = useStore()
   const draft = drafts.find((d) => d.draft_id === id)
 
   const [edited, setEdited] = useState("")
-  const [saving, setSaving] = useState(false)
+  const [feedback, setFeedback] = useState("")
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [savingFeedback, setSavingFeedback] = useState(false)
 
   useEffect(() => {
     if (draft) {
@@ -85,8 +89,8 @@ export default function DraftDetailPage({
 
   const changed = edited !== draft.draft_content
 
-  const sendFeedback = async () => {
-    setSaving(true)
+  const sendEditFeedback = async () => {
+    setSavingEdit(true)
     try {
       const res = await submitFeedback({
         draft_type: draft.draft_type,
@@ -94,16 +98,43 @@ export default function DraftDetailPage({
         edited_content: edited,
       })
       updateDraft(draft.draft_id, { edited_content: edited })
-      addPattern(res.learned_pattern)
-      toast.success("Feedback submitted", {
-        description: `Learned: ${res.learned_pattern.pattern_type}`,
+      mutate("skills")
+      toast.success("Edits sent as feedback", {
+        description: res.message || "Skill updated",
       })
     } catch (err) {
       toast.error("Feedback failed", {
         description: err instanceof Error ? err.message : "Unknown error",
       })
     } finally {
-      setSaving(false)
+      setSavingEdit(false)
+    }
+  }
+
+  const sendNoteFeedback = async () => {
+    if (!feedback.trim()) {
+      toast.error("Write some feedback first")
+      return
+    }
+    setSavingFeedback(true)
+    try {
+      const noteAsEdit = `${draft.draft_content}\n\n---\nPARTNER FEEDBACK:\n${feedback}`
+      const res = await submitFeedback({
+        draft_type: draft.draft_type,
+        original_content: draft.draft_content,
+        edited_content: noteAsEdit,
+      })
+      mutate("skills")
+      toast.success("Feedback submitted", {
+        description: res.message || "Skill updated",
+      })
+      setFeedback("")
+    } catch (err) {
+      toast.error("Feedback failed", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      })
+    } finally {
+      setSavingFeedback(false)
     }
   }
 
@@ -134,7 +165,7 @@ export default function DraftDetailPage({
             </Badge>
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            {draft.focus_query || "Draft"}
+            {draft.instructions || "Draft"}
           </h1>
           <p className="text-xs text-muted-foreground mt-1 font-mono">
             {draft.draft_id}
@@ -143,7 +174,7 @@ export default function DraftDetailPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-4">
           <Tabs defaultValue="view">
             <TabsList>
               <TabsTrigger value="view">View</TabsTrigger>
@@ -170,14 +201,14 @@ export default function DraftDetailPage({
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
                       {changed
-                        ? "Your edits will be sent as feedback to improve future drafts."
+                        ? "Your edits will be sent as feedback to refine the skill."
                         : "Make changes to enable feedback."}
                     </p>
                     <Button
-                      onClick={sendFeedback}
-                      disabled={!changed || saving}
+                      onClick={sendEditFeedback}
+                      disabled={!changed || savingEdit}
                     >
-                      {saving ? (
+                      {savingEdit ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Submitting
@@ -185,7 +216,7 @@ export default function DraftDetailPage({
                       ) : (
                         <>
                           <Sparkles className="h-4 w-4" />
-                          Submit Feedback
+                          Submit Edits
                         </>
                       )}
                     </Button>
@@ -194,6 +225,46 @@ export default function DraftDetailPage({
               </Card>
             </TabsContent>
           </Tabs>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Feedback
+              </CardTitle>
+              <CardDescription>
+                Tell the system what to change. Your notes refine the{" "}
+                <span className="font-mono">{draft.draft_type}</span> skill.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Textarea
+                rows={5}
+                placeholder='e.g. "Headers must explicitly state MEMORANDUM BY HARVEY. Sign off with JHON and ROCKY only."'
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                className="resize-y"
+              />
+              <div className="flex justify-end">
+                <Button
+                  onClick={sendNoteFeedback}
+                  disabled={savingFeedback || !feedback.trim()}
+                >
+                  {savingFeedback ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Submitting
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Submit Feedback
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:col-span-2 space-y-4">
@@ -206,9 +277,7 @@ export default function DraftDetailPage({
             </CardHeader>
             <CardContent className="space-y-3">
               {draft.citations.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No citations.
-                </p>
+                <p className="text-sm text-muted-foreground">No citations.</p>
               )}
               {draft.citations.map((c, i) => (
                 <div
@@ -222,7 +291,7 @@ export default function DraftDetailPage({
                     </p>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
-                    “{c.text_segment}”
+                    &ldquo;{c.text_segment}&rdquo;
                   </p>
                   <Link
                     href={`/documents/${c.source_document_id}`}
@@ -248,9 +317,7 @@ export default function DraftDetailPage({
                   <code className="text-[10px] text-muted-foreground block truncate mb-1">
                     {cid}
                   </code>
-                  <p className="text-xs leading-relaxed line-clamp-5">
-                    {text}
-                  </p>
+                  <p className="text-xs leading-relaxed line-clamp-5">{text}</p>
                 </div>
               ))}
             </CardContent>
