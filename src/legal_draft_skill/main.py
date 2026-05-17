@@ -65,10 +65,13 @@ def get_embeddings():
     global _embeddings_instance
     if _embeddings_instance is None:
         settings = get_settings()
-        _embeddings_instance = OpenAIEmbeddings(
-            openai_api_key=settings.OPENROUTER_API_KEY,
-            openai_api_base="https://openrouter.ai/api/v1"
-        )
+        kwargs = {
+            "openai_api_key": settings.API_KEY,
+        }
+        if settings.PROVIDER == "openrouter":
+            kwargs["openai_api_base"] = "https://openrouter.ai/api/v1"
+        
+        _embeddings_instance = OpenAIEmbeddings(**kwargs)
     return _embeddings_instance
 
 # --- Document Endpoints ---
@@ -329,3 +332,51 @@ async def delete_skill(draft_type: str):
     
     shutil.rmtree(skill_dir)
     return {"status": "success", "message": f"Skill {draft_type} and its directory deleted"}
+
+# --- Static UI Serving ---
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Determine the UI directory path (inside the package)
+UI_DIR = os.path.join(os.path.dirname(__file__), "ui")
+
+if os.path.exists(UI_DIR):
+    # Serve static assets (JS, CSS, images)
+    # We use a custom route for the UI to handle SPA routing (Next.js)
+    app.mount("/_next", StaticFiles(directory=os.path.join(UI_DIR, "_next")), name="next-static")
+    app.mount("/static", StaticFiles(directory=UI_DIR), name="ui-static")
+
+    @app.get("/{full_path:path}")
+    async def serve_ui(full_path: str):
+        # Skip API routes
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404)
+        
+        # Check if the requested file exists
+        file_path = os.path.join(UI_DIR, full_path)
+        
+        # 1. Exact file match (e.g. static assets, images)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        
+        # 2. Check for .html version (Next.js routing)
+        html_path = file_path + ".html"
+        if os.path.isfile(html_path):
+            return FileResponse(html_path)
+            
+        # 3. Directory index (e.g. /documents -> /documents.html or /documents/index.html)
+        if not full_path or full_path == "/":
+            index_path = os.path.join(UI_DIR, "index.html")
+            if os.path.exists(index_path):
+                return FileResponse(index_path)
+        
+        # 4. Fallback to root index for SPA routing
+        root_index = os.path.join(UI_DIR, "index.html")
+        if os.path.exists(root_index):
+            return FileResponse(root_index)
+        
+        raise HTTPException(status_code=404)
+else:
+    @app.get("/")
+    async def ui_not_found():
+        return {"message": "Legal Draft Skill API is running. UI assets not found in package. Use 'npm run build' in the ui directory and copy 'out' to 'src/legal_draft_skill/ui' to enable the web interface."}

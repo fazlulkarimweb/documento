@@ -9,7 +9,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Pearson Specter Litt — Legal Intelligence",
+  title: "Legal Intelligence",
   description:
     "Ingest messy legal documents, generate grounded drafts, and learn from operator edits.",
   generator: "v0.app",

@@ -15,9 +15,9 @@ function uid() {
   return crypto.randomUUID()
 }
 
-const MOCK_SKILLS_KEY = "psl-mock-skills-v1"
-const MOCK_DOCS_KEY = "psl-mock-docs-v1"
-const MOCK_DRAFTS_KEY = "psl-mock-drafts-v1"
+const MOCK_SKILLS_KEY = "li-mock-skills-v1"
+const MOCK_DOCS_KEY = "li-mock-docs-v1"
+const MOCK_DRAFTS_KEY = "li-mock-drafts-v1"
 
 // ---------- generic local store helpers ----------
 function load<T>(key: string, seed: T): T {
@@ -41,8 +41,8 @@ function loadMockSkills(): Skill[] {
     {
       draft_type: "legal-memo",
       content:
-        '# Skill: legal-memo\n## Metadata\n- Pattern Type: Direct_Override\n- Description: Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements for Jhon and Rocky.\n\n## Instructions\n- Headers must explicitly state "MEMORANDUM BY HARVEY".\n- Ensure the background section is written exclusively in the active voice.\n- All memos must be signed by JHON and ROCKY.',
-      metadata: { description: "Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements for Jhon and Rocky." },
+        '# Skill: legal-memo\n## Metadata\n- Pattern Type: Direct_Override\n- Description: Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements.\n\n## Instructions\n- Headers must explicitly state "LEGAL MEMORANDUM".\n- Ensure the background section is written exclusively in the active voice.\n- All memos must be signed by authorized signatories.',
+      metadata: { description: "Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements." },
     },
   ])
 }
@@ -164,10 +164,10 @@ export async function mockGenerateDraft(opts: {
   const chunkId = uid()
   const draft_id = uid()
   const now = new Date().toISOString()
-  const draft_content = `**MEMORANDUM BY HARVEY**
+  const draft_content = `**LEGAL MEMORANDUM**
 
 **TO:** Senior Partners
-**FROM:** Legal Assistant, Pearson Specter Litt
+**FROM:** Senior Counsel, Legal Intelligence
 **DATE:** ${new Date().toLocaleDateString()}
 **RE:** ${opts.instructions?.slice(0, 120) || "Notice to Vacate and Rent Arrears"}
 

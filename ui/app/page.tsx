@@ -99,7 +99,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <DocumentUploader
-              onIngested={(id) => router.push(`/documents/${id}`)}
+              onIngested={(id) => router.push(`/documents/viewer?id=${id}`)}
             />
           </CardContent>
         </Card>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
             {drafts.slice(0, 5).map((d) => (
               <Link
                 key={d.draft_id}
-                href={`/drafts/${d.draft_id}`}
+                href={`/drafts/viewer?id=${d.draft_id}`}
                 className="flex items-center justify-between rounded-md border border-border px-3 py-2 hover:bg-accent transition-colors"
               >
                 <div className="min-w-0">

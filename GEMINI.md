@@ -1,7 +1,7 @@
-# Legal Draft Skill - AI Engineer Assessment
+# Legal Draft Skill
 
 ## Project Overview
-You are building an internal workflow for Pearson Specter Litt to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.
+You are building an internal workflow for Legal Intelligence to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.
 
 ## Core Objectives
 1.  **Document Processing:** OCR and text extraction from noisy/messy files into structured data.

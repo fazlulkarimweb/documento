@@ -10,11 +10,14 @@ import difflib
 class Learner:
     def __init__(self):
         settings = get_settings()
-        self.llm = ChatOpenAI(
-            model=settings.LLM,
-            openai_api_key=settings.OPENROUTER_API_KEY,
-            openai_api_base="https://openrouter.ai/api/v1"
-        )
+        kwargs = {
+            "model": settings.LLM,
+            "openai_api_key": settings.API_KEY,
+        }
+        if settings.PROVIDER == "openrouter":
+            kwargs["openai_api_base"] = "https://openrouter.ai/api/v1"
+
+        self.llm = ChatOpenAI(**kwargs)
 
     async def learn_from_edit(
         self, 
@@ -72,7 +75,7 @@ class Learner:
                 pass
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are the Lead Legal Knowledge Engineer at Pearson Specter Litt.
+            ("system", """You are the Lead Legal Knowledge Engineer at Legal Intelligence.
             Your task is to maintain and refine 'Agent Skills' for our legal AI.
             
             CURRENT SKILL DEFINITION ({draft_type}):

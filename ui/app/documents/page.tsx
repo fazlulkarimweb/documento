@@ -93,7 +93,7 @@ export default function DocumentsPage() {
                       </div>
                       <div className="min-w-0">
                         <CardTitle className="text-base truncate">
-                          <Link href={`/documents/${doc.document_id}`}>
+                          <Link href={`/documents/viewer?id=${doc.document_id}`}>
                             <span className="absolute inset-0 z-10" aria-hidden="true" />
                             {doc.metadata.filename}
                           </Link>

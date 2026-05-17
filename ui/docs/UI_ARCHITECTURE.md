@@ -1,4 +1,4 @@
-# UI Architecture — Pearson Specter Litt Legal Workflow
+# UI Architecture — Legal Intelligence Document Workflow
 
 This document describes how the Next.js frontend is organized, how data flows between screens, and how it integrates with the backend (or mock layer) to deliver the four core objectives: **Document Processing → Grounded Retrieval → Draft Generation → Learning Loop**.
 
@@ -208,7 +208,7 @@ When `NEXT_PUBLIC_MOCK=true`:
 ## 8. Styling & Theming
 
 - **Tailwind v4** with a constrained palette of 5 tokens defined in `app/globals.css`:
-  - `--background`, `--foreground`, `--primary` (deep navy — Pearson Specter brand), `--muted`, `--accent` (warm gold).
+  - `--background`, `--foreground`, `--primary` (deep navy), `--muted`, `--accent` (warm gold).
 - **shadcn/ui** for primitives (Card, Tabs, Dialog, Sheet, Table, Badge, Sonner).
 - **Typography** — Geist Sans for UI; Geist Mono for chunk IDs and citation tokens.
 - **Density** — comfortable on `/drafts/[id]` (long-form reading), compact on tables.

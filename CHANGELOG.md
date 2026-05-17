@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2026-05-15
 ### Added
-- Initial project structure based on AI Engineer Assessment requirements.
+- Initial project structure.
 - `GEMINI.md` with project-specific mandates and standards.
 - `pyproject.toml` with dependencies.
 - `README.md` with setup instructions and architecture overview.

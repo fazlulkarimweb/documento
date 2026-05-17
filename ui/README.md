@@ -1,6 +1,6 @@
-# Pearson Specter Litt — Legal Document Workflow UI
+# Legal Intelligence — Legal Document Workflow UI
 
-A professional Next.js (App Router) frontend for the **Pearson Specter Litt** legal workflow platform. It ingests messy legal documents (scanned PDFs, handwritten notes, images), shows OCR-extracted chunks, generates grounded legal drafts with citations, and captures operator edits as a learning loop.
+A professional Next.js (App Router) frontend for the **Legal Intelligence** legal workflow platform. It ingests messy legal documents (scanned PDFs, handwritten notes, images), shows OCR-extracted chunks, generates grounded legal drafts with citations, and captures operator edits as a learning loop.
 
 > Backend contract: any service that implements `POST /api/v1/documents`, `POST /api/v1/drafts/generate`, and `POST /api/v1/drafts/feedback` as defined in [`docs/UI_ARCHITECTURE.md`](./docs/UI_ARCHITECTURE.md).
 
@@ -300,5 +300,4 @@ See **[`docs/UI_ARCHITECTURE.md`](./docs/UI_ARCHITECTURE.md)** for:
 ---
 
 ## License
-
-Proprietary — Pearson Specter Litt internal use.
+Proprietary — internal use.

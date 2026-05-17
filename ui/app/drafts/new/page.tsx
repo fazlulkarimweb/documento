@@ -115,7 +115,7 @@ function NewDraftInner() {
       toast.success("Draft generated", {
         description: `${(res.grounding_score * 100).toFixed(0)}% grounded`,
       })
-      router.push(`/drafts/${res.draft_id}`)
+      router.push(`/drafts/viewer?id=${res.draft_id}`)
     } catch (err) {
       toast.error("Generation failed", {
         description: err instanceof Error ? err.message : "Unknown error",
@@ -183,7 +183,7 @@ function NewDraftInner() {
               <Textarea
                 id="instructions"
                 rows={6}
-                placeholder={`Describe what you want. For example:\n\n"Draft a memorandum summarizing the arrears, breach clauses, and the May 15 vacation deadline. Use active voice in the background section and sign off as Harvey."`}
+                placeholder={`Describe what you want. For example:\n\n"Draft a memorandum summarizing the arrears, breach clauses, and the May 15 vacation deadline. Use active voice in the background section and sign off as Senior Counsel."`}
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 className="resize-y"

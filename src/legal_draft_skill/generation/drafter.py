@@ -12,11 +12,14 @@ class Drafter:
     def __init__(self):
         settings = get_settings()
         
-        self.llm = ChatOpenAI(
-            model=settings.LLM,
-            openai_api_key=settings.OPENROUTER_API_KEY,
-            openai_api_base="https://openrouter.ai/api/v1"
-        )
+        kwargs = {
+            "model": settings.LLM,
+            "openai_api_key": settings.API_KEY,
+        }
+        if settings.PROVIDER == "openrouter":
+            kwargs["openai_api_base"] = "https://openrouter.ai/api/v1"
+
+        self.llm = ChatOpenAI(**kwargs)
         self.memory_dir = "memory"
 
     async def generate_draft(
@@ -48,7 +51,7 @@ class Drafter:
                 pass
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a legal assistant at Pearson Specter Litt. 
+            ("system", """You are a legal assistant at Legal Intelligence. 
             Generate a {draft_type} based ONLY on the provided context. 
             
             STRICT CITATION RULES:

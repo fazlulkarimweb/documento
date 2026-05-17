@@ -27,7 +27,15 @@ dependencies = [
     "uvicorn",
     "python-multipart",
     "docling",
+    "pyyaml",
 ]
+
+[project.scripts]
+legal-draft-skill = "legal_draft_skill.cli:start"
+
+[tool.setuptools.package-data]
+legal_draft_skill = ["skills/**/*", "ui/**/*"]
+docs = ["images/*.png"]
 
 [project.optional-dependencies]
 test = [

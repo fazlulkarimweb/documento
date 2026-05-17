@@ -100,7 +100,7 @@ export default function DraftsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <CardTitle className="text-base truncate">
-                      <Link href={`/drafts/${d.draft_id}`}>
+                      <Link href={`/drafts/viewer?id=${d.draft_id}`}>
                         <span className="absolute inset-0 z-10" aria-hidden="true" />
                         {d.draft_type}
                       </Link>

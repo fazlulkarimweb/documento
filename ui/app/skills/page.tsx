@@ -224,7 +224,7 @@ export default function SkillsPage() {
                     </p>
                     <Textarea
                       rows={4}
-                      placeholder='e.g. "Add signed by Rocky too"'
+                      placeholder='e.g. "Add dual signatory requirement"'
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                     />

@@ -29,5 +29,5 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "legal_draft_skill.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["legal-draft-skill", "start"]
 

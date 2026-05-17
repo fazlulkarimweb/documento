@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal-draft-skill-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./memory:/app/memory
+      - ./skills:/app/skills
+      - ./legal_drafts.db:/app/legal_drafts.db
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API: ${NEXT_PUBLIC_API:-http://localhost:8000}
+        NEXT_PUBLIC_MOCK: ${NEXT_PUBLIC_MOCK:-false}
+    container_name: legal-draft-skill-ui
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API=${NEXT_PUBLIC_API:-http://localhost:8000}
+      - NEXT_PUBLIC_MOCK=${NEXT_PUBLIC_MOCK:-false}
+    depends_on:
+      - api
+    restart: unless-stopped

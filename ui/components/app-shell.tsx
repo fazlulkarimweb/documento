@@ -32,10 +32,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold text-sidebar-foreground">
-              Pearson Specter Litt
+              Legal Intelligence
             </span>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Legal Intelligence
+              Document Workflow
             </span>
           </div>
         </div>
@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Scale className="h-4 w-4" />
           </div>
-          <span className="text-sm font-semibold">Pearson Specter Litt</span>
+          <span className="text-sm font-semibold">Legal Intelligence</span>
         </header>
         <main className="flex-1 min-w-0">{children}</main>
       </div>

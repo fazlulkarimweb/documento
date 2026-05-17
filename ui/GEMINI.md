@@ -1,7 +1,7 @@
 # Project Specification: Legal Draft Skill (app.legal-draft-skill.io)
 
 ## 1. Project Overview
-You are building an internal workflow for Pearson Specter Litt to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.
+You are building an internal workflow for Legal Intelligence to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.
 
 
 ## 2. Technical Stack
