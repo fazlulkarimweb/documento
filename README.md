@@ -43,6 +43,34 @@ Tailor the system to your firm's standards. Manage, edit, and refine the 24 pre-
 - **Autonomous Learning Loop:** The system learns your stylistic preferences from your edits.
 - **Unified Distribution:** A single Python package serves both the Backend and the UI.
 
+## Agent Skills
+Legal Draft Skill utilizes a structured **Skills** architecture. The system comes pre-loaded with **24 specialized skills** for various legal drafting scenarios:
+
+- `legal-memo`: Enforce memorandum headers, active voice, and specific signatory requirements.
+- `civil-complaint`: Drafts formal initial pleadings to initiate a lawsuit.
+- `answer-affirmative-defenses`: Drafts responsive pleadings and legal affirmative defenses.
+- `motion-to-dismiss`: Drafts motions challenging a complaint's legal sufficiency.
+- `motion-summary-judgment`: Drafts motions for judgment based on undisputed facts.
+- `written-interrogatories`: Drafts formal written questions for discovery purposes.
+- `request-for-production`: Drafts formal requests for physical or electronic evidence.
+- `settlement-agreement`: Drafts binding agreements to resolve legal disputes.
+- `affidavit-witness-declaration`: Drafts formal sworn statements for evidentiary use.
+- `mutual-nda`: Drafts mutual agreements to protect confidential information.
+- `msa`: Drafts primary frameworks for ongoing professional services.
+- `sow`: Defines specific project deliverables, timelines, and pricing.
+- `saas-subscription-agreement`: Drafts terms for accessing cloud-hosted software services.
+- `articles-of-incorporation`: Drafts foundational corporate charter and organizational filings.
+- `corporate-bylaws`: Drafts internal corporate rules and governance frameworks.
+- `llc-operating-agreement`: Defines ownership, management, and LLC tax structures.
+- `board-resolution`: Drafts formal authorizations and board-level decisions.
+- `last-will-testament`: Drafts testamentary documents for asset distribution.
+- `revocable-living-trust`: Drafts trust structures for asset management and distribution.
+- `durable-power-of-attorney`: Drafts authorizations for financial and business management.
+- `advance-healthcare-directive`: Drafts medical proxy designations and treatment preferences.
+- `patent-claims`: Drafts utility patent claims following strict guidelines.
+- `trademark-description`: Drafts identifications of mark-related goods and services.
+- `cease-and-desist`: Drafts formal demands to halt unauthorized activities.
+
 ### Using Skills with other LLMs (Claude, etc.)
 If you want to use these specialized legal skills in Claude or other LLM interfaces, you can find the structured `SKILL.md` files in the `src/legal_draft_skill/skills/` folder. Simply copy the content of the relevant skill's `SKILL.md` file and paste it into your system prompt or instructions.
 
