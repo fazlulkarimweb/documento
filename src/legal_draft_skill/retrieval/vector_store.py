@@ -3,7 +3,7 @@ import sqlite3
 import sqlite_vec
 import json
 import os
-from legal_draft_generator.config import get_settings
+from legal_draft_skill.config import get_settings
 from typing import List, Dict, Any, Tuple
 import uuid
 import struct

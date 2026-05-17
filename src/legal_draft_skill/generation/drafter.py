@@ -2,19 +2,18 @@ from __future__ import annotations
 from typing import List, Dict, Any
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from legal_draft_generator.config import get_settings
+from legal_draft_skill.config import get_settings
 import uuid
 import os
 import json
 import re
 
 class Drafter:
-    def __init__(self, mode: str = "quick"):
+    def __init__(self):
         settings = get_settings()
-        model_name = settings.QUICK_THINK_LLM if mode == "quick" else settings.DEEP_THINK_LLM
         
         self.llm = ChatOpenAI(
-            model=model_name,
+            model=settings.LLM,
             openai_api_key=settings.OPENROUTER_API_KEY,
             openai_api_base="https://openrouter.ai/api/v1"
         )

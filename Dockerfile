@@ -28,5 +28,6 @@ COPY . .
 # Expose the FastAPI port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["uvicorn", "legal_draft_generator.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application
+CMD ["uvicorn", "legal_draft_skill.main:app", "--host", "0.0.0.0", "--port", "8000"]
+

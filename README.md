@@ -1,7 +1,7 @@
-# Legal Draft Generator 
+# Legal Draft Skill 
 
 ## Introduction
-Legal Draft Generator is a production-ready legal document intelligence system built for Pearson Specter Litt. It specializes in processing "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
+Legal Draft Skill is a production-ready legal document intelligence system built for Pearson Specter Litt. It specializes in processing "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
 
 ## Video Presentation
 Here is the video part 1: Intro: [Intro Video Link](https://www.loom.com/share/c209704d540942c6b41c46dabe621170)
@@ -43,12 +43,11 @@ Legal Draft Generator utilizes a structured **Skills** architecture (`skills/`).
     ```env
     DB_PATH=legal_drafts.db
     OPENROUTER_API_KEY=your_key
-    QUICK_THINK_LLM=openai/gpt-4o-mini
-    DEEP_THINK_LLM=openai/gpt-4o
+    LLM=google/gemini-2.0-flash-001
     ```
 6.  **Run the application:**
     ```bash
-    uvicorn legal_draft_generator.main:app --reload
+    uvicorn legal_draft_skill.main:app --reload
     ```
 7.  **Run tests:**
     ```bash
@@ -60,11 +59,12 @@ The system is containerized for easy deployment and environment consistency.
 
 1.  **Build the Docker image:**
     ```bash
-    docker build -t legal_draft_generator-app .
-    ```
-2.  **Run the container:**
-    ```bash
-    docker run -p 8000:8000 --env-file .env legal_draft_generator-app
+    docker build -t legal_draft_skill-app .
+        ```
+    9.  **Run with Docker:**
+        ```bash
+        docker run -p 8000:8000 --env-file .env legal_draft_skill-app
+
     ```
     *Note: Ensure your `.env` file is present in the root directory before running.*
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from legal_draft_generator.models import (
+from legal_draft_skill.models import (
     DocumentIngestionResponse,
     DocumentListResponse,
     DraftGenerationRequest,
@@ -16,11 +16,11 @@ from legal_draft_generator.models import (
     SystemMetricsResponse,
     StatsResponse
 )
-from legal_draft_generator.ingestion.processor import DocumentProcessor
-from legal_draft_generator.retrieval.vector_store import VectorStore
-from legal_draft_generator.generation.drafter import Drafter
-from legal_draft_generator.feedback.learner import Learner
-from legal_draft_generator.config import get_settings
+from legal_draft_skill.ingestion.processor import DocumentProcessor
+from legal_draft_skill.retrieval.vector_store import VectorStore
+from legal_draft_skill.generation.drafter import Drafter
+from legal_draft_skill.feedback.learner import Learner
+from legal_draft_skill.config import get_settings
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Optional, List
@@ -155,7 +155,7 @@ async def generate_draft(request: DraftGenerationRequest):
             raise HTTPException(status_code=404, detail="No relevant context found in specified documents")
         
         # Generate draft
-        drafter = Drafter(mode="quick")
+        drafter = Drafter()
         result = await drafter.generate_draft(
             request.draft_type, context, request.focus_query
         )

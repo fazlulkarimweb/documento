@@ -4,8 +4,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     DB_PATH: str = "legal_drafts.db"
     OPENROUTER_API_KEY: str
-    QUICK_THINK_LLM: str
-    DEEP_THINK_LLM: str
+    LLM: str
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

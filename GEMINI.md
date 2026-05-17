@@ -1,4 +1,4 @@
-# Legal Draft Generator - AI Engineer Assessment
+# Legal Draft Skill - AI Engineer Assessment
 
 ## Project Overview
 You are building an internal workflow for Pearson Specter Litt to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.
