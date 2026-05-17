@@ -1,6 +1,6 @@
 ```yaml
 name: cease-and-desist
-description: Drafts formal cease-and-desist letters. Use to demand the termination of unauthorized activities or IP infringement.
+description: Drafts formal demands to halt unauthorized activities.
 context: fork
 allowed-tools:
   - read_file

@@ -1,6 +1,6 @@
 ```yaml
 name: durable-power-of-attorney
-description: Drafts Durable Powers of Attorney. Use to authorize an agent to manage financial and business transactions.
+description: Drafts authorizations for financial and business management.
 context: fork
 allowed-tools:
   - read_file

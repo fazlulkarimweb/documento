@@ -42,7 +42,7 @@ function loadMockSkills(): Skill[] {
       draft_type: "legal-memo",
       content:
         '# Skill: legal-memo\n## Metadata\n- Pattern Type: Direct_Override\n- Description: Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements for Jhon and Rocky.\n\n## Instructions\n- Headers must explicitly state "MEMORANDUM BY HARVEY".\n- Ensure the background section is written exclusively in the active voice.\n- All memos must be signed by JHON and ROCKY.',
-      metadata: null,
+      metadata: { description: "Enforce memorandum header labeling, active voice in background sections, and dual signatory requirements for Jhon and Rocky." },
     },
   ])
 }

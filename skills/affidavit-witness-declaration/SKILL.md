@@ -1,6 +1,6 @@
 ```yaml
 name: affidavit-witness-declaration
-description: Drafts formal affidavits and declarations under penalty of perjury. Use when drafting sworn statements for court proceedings.
+description: Drafts formal sworn statements for evidentiary use.
 context: fork
 allowed-tools:
   - read_file

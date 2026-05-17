@@ -17,7 +17,34 @@ Here is the video part 2: Architecture: [Architecture Video Link](https://www.lo
  You can create, update, and delete these skills via API to tailor the agent's behavior to firm-specific standards.
 
 ## Agent Skills
-Legal Draft Generator utilizes a structured **Skills** architecture (`skills/`). Every draft type (e.g., `legal-memo`, `legal-notice`) is powered by a dedicated skill definition that includes:
+Legal Draft Skill utilizes a structured **Skills** architecture (`skills/`). The system comes pre-loaded with **24 specialized skills** for various legal drafting scenarios:
+
+- `legal-memo`: Enforce memorandum headers, active voice, and dual signatory requirements.
+- `civil-complaint`: Drafts formal civil complaints for initiating lawsuits in state or federal court.
+- `answer-affirmative-defenses`: Drafts answers to civil complaints, including affirmative defenses.
+- `motion-to-dismiss`: Drafts motions to challenge the legal sufficiency of complaints under FRCP 12(b)(6).
+- `motion-summary-judgment`: Drafts motions for summary judgment when there are no disputed material facts.
+- `written-interrogatories`: Drafts formal interrogatories for requesting written information from opposing parties.
+- `request-for-production`: Drafts formal requests for obtaining physical or electronic evidence during discovery.
+- `settlement-agreement`: Drafts settlement agreements and mutual releases to resolve disputes out of court.
+- `affidavit-witness-declaration`: Drafts formal sworn statements and declarations under penalty of perjury.
+- `mutual-nda`: Drafts mutual non-disclosure agreements to protect confidential business information.
+- `msa`: Drafts Master Services Agreements to establish frameworks for ongoing professional services.
+- `sow`: Drafts Statements of Work defining project deliverables, timelines, and pricing under an MSA.
+- `saas-subscription-agreement`: Drafts SaaS Subscription Agreements and Terms of Service for cloud software access.
+- `articles-of-incorporation`: Drafts corporate charter documents and Certificates of Incorporation for state filing.
+- `corporate-bylaws`: Drafts corporate bylaws to establish internal rules, voting, and governance frameworks.
+- `llc-operating-agreement`: Drafts LLC Operating Agreements defining ownership, management, and tax structures.
+- `board-resolution`: Drafts formal board resolutions and written consents to document corporate authorizations.
+- `last-will-testament`: Drafts Last Wills and Testaments with fiduciary appointments and asset distributions.
+- `revocable-living-trust`: Drafts trust structures for lifetime asset management and post-death distribution.
+- `durable-power-of-attorney`: Drafts authorizations for agents to manage financial and business transactions.
+- `advance-healthcare-directive`: Drafts designations for healthcare proxies and medical treatment preferences.
+- `patent-claims`: Drafts utility patent claims following strict patent office structural guidelines.
+- `trademark-description`: Drafts identifications of goods and services following trademark office standards.
+- `cease-and-desist`: Drafts formal demands for the termination of unauthorized activities or IP infringement.
+
+Every draft type is powered by a dedicated skill definition that includes:
 - **Core Instructions:** LLM directives learned from operator edits or manual administrative updates.
 - **Intelligent Merging:** When updating a skill, the system uses an LLM to surgically merge new instructions into the existing definition, automatically resolving contradictions.
 - **Persistent Memory:** Skills are stored as human-readable `SKILL.md` files, ensuring long-term learning and easy auditing.

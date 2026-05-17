@@ -1,6 +1,6 @@
 ```yaml
 name: motion-summary-judgment
-description: Drafts motions for summary judgment. Use to request a court ruling when there are no disputed material facts.
+description: Drafts motions for judgment based on undisputed facts.
 context: fork
 allowed-tools:
   - read_file

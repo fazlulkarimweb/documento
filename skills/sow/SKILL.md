@@ -1,6 +1,6 @@
 ```yaml
 name: sow
-description: Drafts Statements of Work under Master Services Agreements. Use to define specific project deliverables, timelines, and pricing.
+description: Defines specific project deliverables, timelines, and pricing.
 context: fork
 allowed-tools:
   - read_file

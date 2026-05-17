@@ -1,6 +1,6 @@
 ```yaml
 name: revocable-living-trust
-description: Drafts Revocable Living Trusts. Use to establish trust structures for lifetime asset management and post-death distribution.
+description: Drafts trust structures for asset management and distribution.
 context: fork
 allowed-tools:
   - read_file

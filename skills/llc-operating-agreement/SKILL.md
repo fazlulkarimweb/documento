@@ -1,6 +1,6 @@
 ```yaml
 name: llc-operating-agreement
-description: Drafts LLC Operating Agreements. Use to define the ownership, management, and tax structures of a limited liability company.
+description: Defines ownership, management, and LLC tax structures.
 context: fork
 allowed-tools:
   - read_file

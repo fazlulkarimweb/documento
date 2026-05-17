@@ -1,6 +1,6 @@
 ```yaml
 name: civil-complaint
-description: Drafts formal civil complaints. Use when the user requests an initial pleading to initiate a lawsuit in state or federal court.
+description: Drafts formal initial pleadings to initiate a lawsuit.
 context: fork
 allowed-tools:
   - read_file

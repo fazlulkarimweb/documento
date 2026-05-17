@@ -1,6 +1,6 @@
 ```yaml
 name: motion-to-dismiss
-description: Drafts motions to dismiss under FRCP 12(b)(6) or state equivalents. Use to challenge the legal sufficiency of complaints.
+description: Drafts motions challenging a complaint's legal sufficiency.
 context: fork
 allowed-tools:
   - read_file

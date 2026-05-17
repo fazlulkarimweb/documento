@@ -1,6 +1,6 @@
 ```yaml
 name: answer-affirmative-defenses
-description: Drafts answers to civil complaints, including affirmative defenses. Use when responsive pleadings are required.
+description: Drafts responsive pleadings and legal affirmative defenses.
 context: fork
 allowed-tools:
   - read_file

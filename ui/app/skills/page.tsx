@@ -152,8 +152,15 @@ export default function SkillsPage() {
                         {s.draft_type}
                       </CardTitle>
                     </div>
-                    <CardDescription>
-                      <Badge variant="outline">skill</Badge>
+                    <CardDescription className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">skill</Badge>
+                      </div>
+                      {s.metadata?.description && (
+                        <p className="text-xs text-foreground font-sans mt-1">
+                          {s.metadata.description as string}
+                        </p>
+                      )}
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-1">

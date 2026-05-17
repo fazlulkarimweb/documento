@@ -1,6 +1,6 @@
 ```yaml
 name: settlement-agreement
-description: Drafts settlement agreements and mutual releases of claims. Use to resolve legal disputes out of court.
+description: Drafts binding agreements to resolve legal disputes.
 context: fork
 allowed-tools:
   - read_file

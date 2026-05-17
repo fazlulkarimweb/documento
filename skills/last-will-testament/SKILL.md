@@ -1,6 +1,6 @@
 ```yaml
 name: last-will-testament
-description: Drafts Last Wills and Testaments. Use to prepare testamentary documents with fiduciary appointments and asset distributions.
+description: Drafts testamentary documents for asset distribution.
 context: fork
 allowed-tools:
   - read_file

@@ -1,6 +1,6 @@
 ```yaml
 name: trademark-description
-description: Drafts trademark descriptions. Use to write identifications of goods and services following trademark office standards.
+description: Drafts identifications of mark-related goods and services.
 context: fork
 allowed-tools:
   - read_file

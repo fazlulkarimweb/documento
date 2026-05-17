@@ -1,6 +1,6 @@
 ```yaml
 name: articles-of-incorporation
-description: Drafts corporate charter documents. Use to prepare Articles or Certificates of Incorporation for state filing.
+description: Drafts foundational corporate charter and organizational filings.
 context: fork
 allowed-tools:
   - read_file

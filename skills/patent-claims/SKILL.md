@@ -1,6 +1,6 @@
 ```yaml
 name: patent-claims
-description: Drafts utility patent claims. Use to structure independent and dependent claims following patent office guidelines.
+description: Drafts utility patent claims following strict guidelines.
 context: fork
 allowed-tools:
   - read_file

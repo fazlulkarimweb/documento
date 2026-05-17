@@ -1,6 +1,6 @@
 ```yaml
 name: mutual-nda
-description: Drafts mutual non-disclosure agreements. Use to protect confidential information during business negotiations.
+description: Drafts mutual agreements to protect confidential information.
 context: fork
 allowed-tools:
   - read_file

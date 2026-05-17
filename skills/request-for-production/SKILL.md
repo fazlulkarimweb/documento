@@ -1,6 +1,6 @@
 ```yaml
 name: request-for-production
-description: Drafts formal requests for production of documents. Use to obtain physical or electronic evidence during discovery.
+description: Drafts formal requests for physical or electronic evidence.
 context: fork
 allowed-tools:
   - read_file

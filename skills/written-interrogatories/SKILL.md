@@ -1,6 +1,6 @@
 ```yaml
 name: written-interrogatories
-description: Drafts formal interrogatories for litigation discovery. Use to request written information from opposing parties.
+description: Drafts formal written questions for discovery purposes.
 context: fork
 allowed-tools:
   - read_file

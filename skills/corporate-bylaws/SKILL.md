@@ -1,6 +1,6 @@
 ```yaml
 name: corporate-bylaws
-description: Drafts corporate bylaws. Use to establish internal corporate rules, voting procedures, and governance frameworks.
+description: Drafts internal corporate rules and governance frameworks.
 context: fork
 allowed-tools:
   - read_file

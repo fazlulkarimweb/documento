@@ -1,6 +1,6 @@
 ```yaml
 name: msa
-description: Drafts Master Services Agreements. Use to establish the primary legal framework for ongoing professional services.
+description: Drafts primary frameworks for ongoing professional services.
 context: fork
 allowed-tools:
   - read_file

@@ -1,6 +1,6 @@
 ```yaml
 name: board-resolution
-description: Drafts formal board resolutions and written consents. Use to document authorizations and actions taken by the board of directors.
+description: Drafts formal authorizations and board-level decisions.
 context: fork
 allowed-tools:
   - read_file

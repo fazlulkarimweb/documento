@@ -242,18 +242,41 @@ async def get_metrics():
 
 # --- Skills Management APIs ---
 
+import yaml
+
 @app.get("/api/v1/skills", response_model=SkillsListResponse)
 async def list_skills():
     skills_list = []
     base_skills_dir = "skills"
     if os.path.exists(base_skills_dir):
-        for draft_type in os.listdir(base_skills_dir):
+        for draft_type in sorted(os.listdir(base_skills_dir)):
             skill_md_path = os.path.join(base_skills_dir, draft_type, "SKILL.md")
             if os.path.isfile(skill_md_path):
                 with open(skill_md_path, "r") as f:
                     content = f.read()
-                skills_list.append(SkillResponse(draft_type=draft_type, content=content))
-    
+
+                # Try to parse frontmatter
+                metadata = {}
+                if content.startswith("```yaml"):
+                    try:
+                        parts = content.split("```", 2)
+                        if len(parts) >= 3:
+                            yaml_content = parts[1].strip()
+                            if yaml_content.startswith("yaml"):
+                                yaml_content = yaml_content[4:].strip()
+                            metadata = yaml.safe_load(yaml_content)
+                    except Exception:
+                        pass
+                elif content.startswith("---"):
+                    try:
+                        parts = content.split("---", 2)
+                        if len(parts) >= 3:
+                            metadata = yaml.safe_load(parts[1])
+                    except Exception:
+                        pass
+
+                skills_list.append(SkillResponse(draft_type=draft_type, content=content, metadata=metadata))
+
     return SkillsListResponse(skills=skills_list)
 
 @app.get("/api/v1/skills/{draft_type}", response_model=SkillResponse)
@@ -261,11 +284,32 @@ async def get_skill(draft_type: str):
     skill_md_path = f"skills/{draft_type}/SKILL.md"
     if not os.path.exists(skill_md_path):
         raise HTTPException(status_code=404, detail=f"Skill for {draft_type} not found")
-    
+
     with open(skill_md_path, "r") as f:
         content = f.read()
-    
-    return SkillResponse(draft_type=draft_type, content=content)
+
+    # Try to parse frontmatter
+    metadata = {}
+    if content.startswith("```yaml"):
+        try:
+            parts = content.split("```", 2)
+            if len(parts) >= 3:
+                yaml_content = parts[1].strip()
+                if yaml_content.startswith("yaml"):
+                    yaml_content = yaml_content[4:].strip()
+                metadata = yaml.safe_load(yaml_content)
+        except Exception:
+            pass
+    elif content.startswith("---"):
+        try:
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                metadata = yaml.safe_load(parts[1])
+        except Exception:
+            pass
+
+    return SkillResponse(draft_type=draft_type, content=content, metadata=metadata)
+
 
 @app.put("/api/v1/skills/{draft_type}", response_model=SkillResponse)
 async def update_skill(draft_type: str, request: SkillUpdateRequest):

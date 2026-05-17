@@ -1,6 +1,6 @@
 ```yaml
 name: advance-healthcare-directive
-description: Drafts Advance Healthcare Directives. Use to designate a healthcare proxy and specify medical treatment preferences.
+description: Drafts medical proxy designations and treatment preferences.
 context: fork
 allowed-tools:
   - read_file

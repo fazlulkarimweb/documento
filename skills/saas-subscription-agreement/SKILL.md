@@ -1,6 +1,6 @@
 ```yaml
 name: saas-subscription-agreement
-description: Drafts SaaS Subscription Agreements and Terms of Service. Use when defining the terms for accessing cloud-hosted software.
+description: Drafts terms for accessing cloud-hosted software services.
 context: fork
 allowed-tools:
   - read_file

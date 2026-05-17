@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -58,10 +58,22 @@ function NewDraftInner() {
   const { mutate: mutateDrafts } = useDrafts()
   const { data: skillsData } = useSWR("skills", () => listSkills())
 
-  const skillTypes = skillsData?.skills.map((s) => s.draft_type) ?? []
-  const suggestions = Array.from(
-    new Set([...skillTypes, ...PRESET_DRAFT_TYPES]),
-  )
+  const skills = useMemo(() => {
+    const list = [...(skillsData?.skills ?? [])]
+    
+    // Add presets that aren't already in skills
+    for (const preset of PRESET_DRAFT_TYPES) {
+      if (!list.find(s => s.draft_type === preset)) {
+        list.push({
+          draft_type: preset,
+          content: "",
+          metadata: { description: "General drafting instructions" }
+        })
+      }
+    }
+    
+    return list.sort((a, b) => a.draft_type.localeCompare(b.draft_type))
+  }, [skillsData])
 
   const [draftType, setDraftType] = useState("legal-memo")
   const [instructions, setInstructions] = useState("")
@@ -143,22 +155,23 @@ function NewDraftInner() {
               <DraftTypeCombobox
                 value={draftType}
                 onChange={setDraftType}
-                options={suggestions}
+                skills={skills}
               />
-              {skillTypes.length > 0 && (
+              {skillsData?.skills && skillsData.skills.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground self-center mr-1">
-                    Skills
+                    Learned Skills
                   </span>
-                  {skillTypes.map((t) => (
+                  {skillsData.skills.map((s) => (
                     <button
-                      key={t}
+                      key={s.draft_type}
                       type="button"
-                      onClick={() => setDraftType(t)}
+                      onClick={() => setDraftType(s.draft_type)}
                       className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-xs hover:bg-accent transition-colors"
+                      title={s.metadata?.description as string}
                     >
                       <Wrench className="h-3 w-3" />
-                      {t}
+                      {s.draft_type}
                     </button>
                   ))}
                 </div>
