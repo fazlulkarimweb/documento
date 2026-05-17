@@ -12,10 +12,6 @@ Legal Draft Skill is a professional-grade legal document intelligence system. It
 
 ## UI Experience: Effortless Drafting
 
-### Effortless drafting with skill
-![Effortless drafting](docs/images/main.png)
-Select your draft type and provide specific instructions. The UI allows you to pick from 24 specialized skills or create custom ones on the fly.
-
 ### 1. Dashboard Overview
 ![Dashboard](docs/images/homepage.png)
 Monitor your system's activity at a glance. Track ingested documents, generated drafts, and the overall grounding accuracy of your system.
