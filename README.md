@@ -1,5 +1,7 @@
 # Legal Draft Agent
 
+<video src="https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/legal-draft-agent-ad.mp4" width="100%" controls></video>
+
 ## Why Legal Draft Agent?
 
 Standard AI chatbots are completely risky for legal drafting—so I built a completely free, open-source Legal Draft Agent with a beautiful UI. Creating professional legal drafts from messy documents is always a massive challenge. It usually boils down to two main bottlenecks. First, legal documents are massive. Context overreach and poor retrieval are constant issues. Second, hallucination is a risk you simply cannot take with legal paperwork. Add in the fact that legal documents require a highly distinct style. Standard AI chatbots just won't cut it. Without the right engineering, prompting an LLM for legal work is dangerous.
@@ -20,31 +22,31 @@ Legal Draft Agent is a professional-grade legal document intelligence system. It
 ## UI Experience: Effortless Drafting
 
 ### Effortless drafting with skill
-![Effortless drafting](docs/images/main.png)
+![Effortless drafting](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/main.png)
 Creating legal drafts from messy documents is easier than ever with our intuitive UI. Select your draft type, provide instructions, and let the agent do the heavy lifting.
 
 ### 1. Dashboard Overview
-![Dashboard](docs/images/homepage.png)
+![Dashboard](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/homepage.png)
 Monitor your system's activity at a glance. Track ingested documents, generated drafts, and the overall grounding accuracy of your system.
 
 ### 2. Streamlined Document Ingestion
-![Documents](docs/images/documents.png)
+![Documents](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/documents.png)
 Simply drag and drop your messy legal documents. Whether it's a scanned PDF, a handwritten note, or a complex contract, our Docling-powered engine extracts every piece of evidence with high fidelity.
 
 ### 3. Interactive Drafting Workflow
-![Drafting](docs/images/drafts.png)
+![Drafting](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/drafts.png)
 Select your draft type and provide specific instructions. The UI allows you to pick from 24 specialized skills or create custom ones on the fly.
 
 ### 4. Grounded Evidence & Citations
-![Draft Detail](docs/images/drafts_detail.png)
+![Draft Detail](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/drafts_detail.png)
 Every draft is 100% grounded. The UI highlights the exact source chunks used for every claim, providing full transparency and auditability.
 
 ### 5. Persistent Skill Management
-![Skills](docs/images/skills.png)
+![Skills](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/skills.png)
 Tailor the system to your firm's standards. Manage, edit, and refine the 24 pre-loaded drafting skills directly through the interface.
 
 ### 6. Creating Skills is Easy
-![Add Skill](docs/images/add-skill.png)
+![Add Skill](https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/add-skill.png)
 Need a new draft type? Creating a custom AI skill is easy. Just define the name and initial instructions, and the agent will handle the rest.
 
 ## Key Features
