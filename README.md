@@ -34,10 +34,19 @@ Tailor the system to your firm's standards. Manage, edit, and refine the 24 pre-
 
 ## Key Features
 
-- **High-Fidelity Ingestion:** Leverages [Docling](https://github.com/docling-project/docling) for advanced parsing with integrated OCR.
-- **Strictly Grounded RAG:** Claims are anchored to specific evidence using local vector search (SQLite + `sqlite-vec`).
-- **Autonomous Learning Loop:** The system learns your stylistic preferences from your edits.
-- **Unified Distribution:** A single Python package serves both the Backend and the UI.
+- **High-Fidelity Multi-Format Ingestion:** Leverages [Docling](https://github.com/docling-project/docling) for advanced parsing of multiple document formats including **PDF, DOCX, PPTX, XLSX, HTML, WAV, MP3, WebVTT, images (PNG, TIFF, JPEG, ...), LaTeX, and plain text.**
+- **📑 Advanced PDF Understanding:** Deep layout analysis including **page layout, reading order, table structure, code, formulas, and image classification.**
+- **Strictly Grounded RAG:** Every claim in a generated draft is anchored to specific source evidence using local vector search (SQLite + `sqlite-vec`).
+- **Autonomous Learning Loop:** The system captures operator edits to extract and apply reusable drafting patterns and stylistic preferences.
+- **Unified Distribution:** A single Python package that serves both the Backend and the UI.
+
+## Use Cases
+
+- **Litigation Preparation:** Rapidly summarize messy discovery productions and draft cited complaints or motions.
+- **Contract Management:** Extract key terms from various contract formats and generate standardized legal memos or summaries.
+- **Corporate Governance:** Automate the drafting of board resolutions and bylaws while maintaining strict adherence to firm standards.
+- **Estate Planning:** Transform unstructured notes and asset lists into formal testamentary documents.
+- **Intellectual Property:** Process technical descriptions and draft precise patent claims or trademark identifications.
 
 ## Agent Skills
 Legal Draft Agent utilizes a structured **Skills** architecture. The system comes pre-loaded with **24 specialized skills** for various legal drafting scenarios:
@@ -69,6 +78,8 @@ Legal Draft Agent utilizes a structured **Skills** architecture. The system come
 
 ### Using Skills with other LLMs (Claude, etc.)
 If you want to use these specialized legal skills in Claude or other LLM interfaces, you can find the structured `SKILL.md` files in the `src/legal_draft_agent/skills/` folder. Simply copy the content of the relevant skill's `SKILL.md` file and paste it into your system prompt or instructions.
+
+For a larger collection of pre-built drafting patterns, visit the [**Legal Draft Skills Repository**](https://github.com/fazlulkarimweb/legal-draft-skills).
 
 ## Quick Start
 
