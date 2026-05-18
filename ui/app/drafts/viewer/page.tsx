@@ -362,17 +362,32 @@ function DraftReviewContent() {
                       </div>
                       
                       <div className="space-y-6">
-                        {Array.from(new Set(draft.citations.map(c => c.source_document_id))).map((docId, idx) => {
-                          const docCitations = draft.citations.filter(c => c.source_document_id === docId)
-                          const fileName = docCitations[0]?.source_file_name || "Unknown Document"
+                        {Array.from(
+                          new Set(
+                            (draft.citations || []).map(
+                              (c) => c.source_document_id,
+                            ),
+                          ),
+                        ).map((docId, idx) => {
+                          const docCitations = (draft.citations || []).filter(
+                            (c) => c.source_document_id === docId,
+                          )
+                          const fileName =
+                            docCitations[0]?.source_file_name ||
+                            "Unknown Document"
                           return (
                             <div key={docId} className="space-y-3">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                                  <Badge
+                                    variant="outline"
+                                    className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]"
+                                  >
                                     {idx + 1}
                                   </Badge>
-                                  <span className="text-sm font-medium">{fileName}</span>
+                                  <span className="text-sm font-medium">
+                                    {fileName}
+                                  </span>
                                 </div>
                                 <code className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">
                                   {docId}
@@ -380,7 +395,10 @@ function DraftReviewContent() {
                               </div>
                               <ul className="space-y-2 pl-7">
                                 {docCitations.map((cite, cIdx) => (
-                                  <li key={cIdx} className="text-xs text-muted-foreground leading-relaxed italic border-l-2 border-muted pl-3">
+                                  <li
+                                    key={cIdx}
+                                    className="text-xs text-muted-foreground leading-relaxed italic border-l-2 border-muted pl-3"
+                                  >
                                     &ldquo;{cite.text_segment}&rdquo;
                                   </li>
                                 ))}

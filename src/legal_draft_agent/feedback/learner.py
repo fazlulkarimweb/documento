@@ -59,6 +59,73 @@ class Learner:
         update_context = f"The operator provided a new direct instruction for {draft_type} drafts:\n{new_instruction}"
         return await self._orchestrate_skill_update(draft_type, update_context)
 
+    async def create_new_skill(
+        self, 
+        instructions: str, 
+        draft_type: str
+    ) -> str:
+        """
+        Generates a brand new, detailed SKILL.md definition based on initial instructions.
+        """
+        skill_dir = f"skills/{draft_type}"
+        skill_md_path = os.path.join(skill_dir, "SKILL.md")
+
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the Lead Legal Knowledge Engineer at Legal Intelligence.
+            Your task is to create a new, high-fidelity 'Agent Skill' for our legal AI.
+            
+            DRAFT TYPE: {draft_type}
+            USER INSTRUCTIONS: {instructions}
+
+            TASK:
+            1. Create a detailed SKILL.md file that encapsulates these instructions.
+            2. Include a YAML frontmatter block with metadata (name, description, context: fork, allowed-tools: [read_file], effort: high/medium).
+            3. Structure the Markdown into sections: # Drafting Skill, ## 1. Trigger Context, ## 2. Formatting & Structure, ## 3. Operational Rules.
+            4. Be specific, actionable, and use professional legal terminology.
+            
+            OUTPUT FORMAT (MUST START WITH YAML):
+            ```yaml
+            name: {draft_type}
+            description: [Brief summary]
+            context: fork
+            allowed-tools:
+              - read_file
+            effort: high
+            ```
+            # [Title]
+            ...
+            
+            Output ONLY the raw content for the SKILL.md file. No conversational filler or surrounding markdown code blocks - just the raw file content starting with the YAML block."""),
+        ])
+
+        chain = prompt | self.llm
+        response = await chain.ainvoke({
+            "draft_type": draft_type,
+            "instructions": instructions
+        })
+
+        final_content = response.content.strip()
+        
+        # Clean up any potential markdown wrap
+        if final_content.startswith("```yaml"):
+            # If it's wrapped in a block, we need to extract everything including the yaml
+            # but sometimes the LLM might just return the raw text starting with ```yaml
+            # We want to keep the YAML but remove the triple backticks if they are at the very start/end
+            if final_content.endswith("```"):
+                final_content = final_content[0:-3].strip()
+            if final_content.startswith("```"):
+                # We want to keep the 'yaml' if it's there but remove the ticks
+                lines = final_content.splitlines()
+                if lines[0].startswith("```"):
+                    final_content = "\n".join(lines[1:]).strip()
+
+        # Save the skill persistently
+        os.makedirs(skill_dir, exist_ok=True)
+        with open(skill_md_path, "w") as f:
+            f.write(final_content)
+            
+        return final_content
+
     async def _orchestrate_skill_update(self, draft_type: str, update_context: str) -> str:
         """
         The central LLM-driven merging engine.

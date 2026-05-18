@@ -150,3 +150,41 @@ async def test_system_eval_metrics_endpoint(mock_app):
     
     assert response.status_code == 200
     assert "overall_system_health" in response.json()
+
+@pytest.mark.asyncio
+@pytest.mark.unit
+async def test_create_skill_endpoint(mock_app):
+    """
+    Test POST /api/v1/skills
+    """
+    from legal_draft_agent.main import learner
+    import os
+    import shutil
+    
+    draft_type = "test-skill-creation"
+    content = "Draft a basic contract"
+    transformed_content = "```yaml\nname: test-skill-creation\n...```\n# Transformed Skill"
+    
+    learner.create_new_skill = AsyncMock(return_value=transformed_content)
+    
+    # Ensure cleanup
+    skill_dir = f"skills/{draft_type}"
+    if os.path.exists(skill_dir):
+        shutil.rmtree(skill_dir)
+        
+    transport = ASGITransport(app=mock_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {
+            "draft_type": draft_type,
+            "content": content
+        }
+        response = await ac.post("/api/v1/skills", json=payload)
+    
+    assert response.status_code == 200
+    json_data = response.json()
+    assert json_data["draft_type"] == draft_type
+    assert json_data["content"] == transformed_content
+    
+    # Clean up (file is not actually created because we mocked create_new_skill in the test)
+    if os.path.exists(skill_dir):
+        shutil.rmtree(skill_dir)

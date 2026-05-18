@@ -1,6 +1,13 @@
 # Legal Draft Agent
 
-![Effortless drafting with skill](docs/images/main.png)
+## Why Legal Draft Agent?
+
+Standard AI chatbots are completely risky for legal drafting—so I built a completely free, open-source Legal Draft Agent with a beautiful UI. Creating professional legal drafts from messy documents is always a massive challenge. It usually boils down to two main bottlenecks. First, legal documents are massive. Context overreach and poor retrieval are constant issues. Second, hallucination is a risk you simply cannot take with legal paperwork. Add in the fact that legal documents require a highly distinct style. Standard AI chatbots just won't cut it. Without the right engineering, prompting an LLM for legal work is dangerous.
+
+That is exactly why I built Legal Draft Agent. It solves these critical issues while giving you a seamless, professional UI. You can ingest any kind of file—from short briefs to massive datasets with millions of lines. Messy formatting? Handwritten images? PDFs, OCR, Docs, or Markdown? It handles them all via a superior RAG pipeline.
+
+Once your data is ingested, you can generate precise legal drafts backed by specialized system prompts and feedback loops. Every single output comes with references, grounding, and evaluation scores to eliminate hallucinations. It comes packed with 24 pre-loaded skills right out of the box. Even better, it includes an AI-powered auto-skill creator. If you are frustrated with an initial draft, you just give the AI feedback. That feedback automatically updates and creates new skills. You teach the AI once, and it never makes that mistake again. With this modern web interface, you can move from raw, unorganized files to high-quality, cited drafts in seconds. Getting started is incredibly easy. You can route to any LLM via OpenRouter.
+
 
 [![PyPI version](https://img.shields.io/pypi/v/legal-draft-agent.svg)](https://pypi.org/project/legal-draft-agent/)
 [![Python versions](https://img.shields.io/pypi/pyversions/legal-draft-agent.svg)](https://pypi.org/project/legal-draft-agent/)
@@ -11,6 +18,10 @@ Legal Draft Agent is a professional-grade legal document intelligence system. It
 **Creating professional legal drafts from messy documents has never been easier.** With our modern web interface, you can move from raw, unorganized files to high-quality, cited drafts in seconds.
 
 ## UI Experience: Effortless Drafting
+
+### Effortless drafting with skill
+![Effortless drafting](docs/images/main.png)
+Creating legal drafts from messy documents is easier than ever with our intuitive UI. Select your draft type, provide instructions, and let the agent do the heavy lifting.
 
 ### 1. Dashboard Overview
 ![Dashboard](docs/images/homepage.png)
@@ -31,6 +42,10 @@ Every draft is 100% grounded. The UI highlights the exact source chunks used for
 ### 5. Persistent Skill Management
 ![Skills](docs/images/skills.png)
 Tailor the system to your firm's standards. Manage, edit, and refine the 24 pre-loaded drafting skills directly through the interface.
+
+### 6. Creating Skills is Easy
+![Add Skill](docs/images/add-skill.png)
+Need a new draft type? Creating a custom AI skill is easy. Just define the name and initial instructions, and the agent will handle the rest.
 
 ## Key Features
 
@@ -91,7 +106,12 @@ pip install legal-draft-agent
 
 ### Running the System
 
-Start the unified system with a single command:
+Start the unified system with a single command. You will need an API key from [**OpenRouter.ai**](https://openrouter.ai/). 
+
+**To get an API key:**
+1. Create an account at [openrouter.ai](https://openrouter.ai/).
+2. Navigate to **Keys** in your dashboard.
+3. Click **Create Key** and copy the resulting string.
 
 ```bash
 legal-draft-agent start --provider "openrouter" --llm "google/gemini-2.0-flash-001" --api-key "your-api-key"

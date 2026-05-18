@@ -315,15 +315,20 @@ export async function mockGetSkill(draft_type: string): Promise<Skill> {
 export async function mockUpdateSkill(
   draft_type: string,
   content: string,
+  metadata?: Record<string, unknown> | null,
 ): Promise<Skill> {
   await new Promise((r) => setTimeout(r, 350))
   const skills = loadMockSkills()
   const existing = skills.find((s) => s.draft_type === draft_type)
   const merged = existing ? `${existing.content}\n\n${content}` : content
-  if (existing) existing.content = merged
-  else skills.unshift({ draft_type, content: merged, metadata: null })
+  if (existing) {
+    existing.content = merged
+    if (metadata) existing.metadata = { ...(existing.metadata || {}), ...metadata }
+  } else {
+    skills.unshift({ draft_type, content: merged, metadata: metadata ?? null })
+  }
   saveMockSkills(skills)
-  return { draft_type, content: merged, metadata: null }
+  return { draft_type, content: merged, metadata: metadata ?? (existing?.metadata || null) }
 }
 
 export async function mockDeleteSkill(

@@ -13,6 +13,7 @@ from legal_draft_agent.models import (
     SkillResponse,
     SkillsListResponse,
     SkillUpdateRequest,
+    SkillCreateRequest,
     SystemMetricsResponse,
     StatsResponse
 )
@@ -281,6 +282,19 @@ async def list_skills():
                 skills_list.append(SkillResponse(draft_type=draft_type, content=content, metadata=metadata))
 
     return SkillsListResponse(skills=skills_list)
+
+@app.post("/api/v1/skills", response_model=SkillResponse)
+async def create_skill(request: SkillCreateRequest):
+    base_skills_dir = "skills"
+    skill_dir = os.path.join(base_skills_dir, request.draft_type)
+    
+    if os.path.exists(skill_dir):
+        raise HTTPException(status_code=400, detail=f"Skill for {request.draft_type} already exists")
+
+    # Use LLM to generate a detailed skill from instructions
+    final_content = await learner.create_new_skill(request.content, request.draft_type)
+    
+    return SkillResponse(draft_type=request.draft_type, content=final_content)
 
 @app.get("/api/v1/skills/{draft_type}", response_model=SkillResponse)
 async def get_skill(draft_type: str):

@@ -19,6 +19,12 @@ export interface IngestResponse {
   ingested_at?: string
 }
 
+export interface Citation {
+  source_document_id: string
+  source_file_name: string
+  text_segment: string
+}
+
 export interface DraftResponse {
   draft_id: string
   status: string
@@ -31,6 +37,7 @@ export interface DraftResponse {
   edited_content?: string | null
   created_at?: string
   updated_at?: string
+  citations?: Citation[]
 }
 
 export interface FeedbackRequest {

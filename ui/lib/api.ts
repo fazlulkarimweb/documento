@@ -184,6 +184,23 @@ export async function getSkill(draft_type: string): Promise<Skill> {
   return jsonOrThrow<Skill>(res, "Get skill")
 }
 
+export async function addSkill(
+  draft_type: string,
+  content: string,
+  metadata?: Record<string, unknown>,
+): Promise<Skill> {
+  if (USE_MOCK) return mockUpdateSkill(draft_type, content, metadata)
+  const res = await fetch(`${API_BASE}/api/v1/skills`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({ draft_type, content, metadata }),
+  })
+  return jsonOrThrow<Skill>(res, "Add skill")
+}
+
 export async function updateSkill(
   draft_type: string,
   content: string,

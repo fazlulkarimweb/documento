@@ -116,6 +116,7 @@ curl -X 'POST' \
 Directly manage the agent's persistent behaviors via the API.
 
 - **Get All Skills:** `GET /api/v1/skills`
+- **Create Skill:** `POST /api/v1/skills` (Requires `draft_type` and `content`)
 - **Get Specific Skill:** `GET /api/v1/skills/{draft_type}`
 - **Update Skill:** `PUT /api/v1/skills/{draft_type}` (LLM-driven merge)
 - **Delete Skill:** `DELETE /api/v1/skills/{draft_type}`

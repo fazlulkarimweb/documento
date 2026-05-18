@@ -55,9 +55,9 @@ export function DraftTypeCombobox({ value, onChange, skills }: DraftTypeCombobox
             <span className="truncate w-full">
               {value || "Select draft type..."}
             </span>
-            {selectedSkill?.metadata?.description && (
+            {typeof selectedSkill?.metadata?.description === "string" && (
               <span className="text-[10px] text-muted-foreground font-sans font-normal truncate w-full">
-                {(selectedSkill.metadata as any).description}
+                {selectedSkill.metadata.description}
               </span>
             )}
           </div>
@@ -104,9 +104,9 @@ export function DraftTypeCombobox({ value, onChange, skills }: DraftTypeCombobox
                     />
                     <span className="font-semibold">{skill.draft_type}</span>
                   </div>
-                  {skill.metadata?.description && (
+                  {typeof skill.metadata?.description === "string" && (
                     <p className="pl-6 text-[11px] text-muted-foreground font-sans font-normal leading-tight mt-1">
-                      {(skill.metadata as any).description}
+                      {skill.metadata.description}
                     </p>
                   )}
                 </CommandItem>

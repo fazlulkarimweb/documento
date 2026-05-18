@@ -94,3 +94,7 @@ class SkillsListResponse(BaseModel):
 
 class SkillUpdateRequest(BaseModel):
     content: str  # The full new content for SKILL.md
+
+class SkillCreateRequest(BaseModel):
+    draft_type: str
+    content: str  # The initial content for SKILL.md
