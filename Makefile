@@ -1,4 +1,4 @@
-# --- Legal Draft Skill Makefile ---
+# --- Legal Draft Agent Makefile ---
 
 # Export all variables defined in this Makefile to child processes (like docker compose)
 .EXPORT_ALL_VARIABLES:
@@ -51,7 +51,7 @@ status:
 # Backend commands
 .PHONY: run
 run:
-	.venv/bin/legal-draft-skill start
+	.venv/bin/legal-draft-agent start
 
 .PHONY: test
 test:
@@ -66,7 +66,7 @@ clean:
 	rm -rf *.egg-info
 	rm -rf src/*.egg-info
 	rm -rf ui/out
-	rm -rf src/legal_draft_skill/ui
+	rm -rf src/legal_draft_agent/ui
 	rm -rf dist/
 	rm -rf build/
 
@@ -74,9 +74,9 @@ clean:
 .PHONY: bundle
 bundle:
 	cd ui && npm install && NEXT_PUBLIC_API="" npm run build
-	mkdir -p src/legal_draft_skill/ui
-	cp -r ui/out/* src/legal_draft_skill/ui/
-	@echo "UI bundled into src/legal_draft_skill/ui with relative API paths"
+	mkdir -p src/legal_draft_agent/ui
+	cp -r ui/out/* src/legal_draft_agent/ui/
+	@echo "UI bundled into src/legal_draft_agent/ui with relative API paths"
 
 # Packaging
 .PHONY: dist

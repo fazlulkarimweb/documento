@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - `pyproject.toml` with dependencies.
 - `README.md` with setup instructions and architecture overview.
 - Basic directory structure (`src/`, `tests/`, `data/`, `memory/`).
-- **Production-ready FastAPI application** in `src/legal_draft_skill/main.py`.
+- **Production-ready FastAPI application** in `src/legal_draft_agent/main.py`.
 - **Document Ingestion** with Docling
 - **Agent Skills Architecture** for persistent learning (replaced simple JSON memory).
 - **Grounded Retrieval** using SQLite with `sqlite-vec` extension (replaced Qdrant).

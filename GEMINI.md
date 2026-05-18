@@ -1,4 +1,4 @@
-# Legal Draft Skill
+# Legal Draft Agent
 
 ## Project Overview
 You are building an internal workflow for Legal Intelligence to process messy legal-style documents. The system must ingest noisy inputs (scanned PDFs, handwritten notes), extract structured information, perform grounded retrieval, generate legal-style drafts, and improve over time by learning from operator edits.

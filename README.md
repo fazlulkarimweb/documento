@@ -1,12 +1,12 @@
-# Legal Draft Skill
+# Legal Draft Agent
 
 ![Effortless drafting with skill](docs/images/main.png)
 
-[![PyPI version](https://img.shields.io/pypi/v/legal-draft-skill.svg)](https://pypi.org/project/legal-draft-skill/)
-[![Python versions](https://img.shields.io/pypi/pyversions/legal-draft-skill.svg)](https://pypi.org/project/legal-draft-skill/)
+[![PyPI version](https://img.shields.io/pypi/v/legal-draft-agent.svg)](https://pypi.org/project/legal-draft-agent/)
+[![Python versions](https://img.shields.io/pypi/pyversions/legal-draft-agent.svg)](https://pypi.org/project/legal-draft-agent/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Legal Draft Skill is a professional-grade legal document intelligence system. It specializes in processing complex, "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
+Legal Draft Agent is a professional-grade legal document intelligence system. It specializes in processing complex, "messy" legal documents, performing strictly grounded retrieval (RAG), and continuously improving through a type-centric learning loop that captures operator edits.
 
 **Creating professional legal drafts from messy documents has never been easier.** With our modern web interface, you can move from raw, unorganized files to high-quality, cited drafts in seconds.
 
@@ -40,7 +40,7 @@ Tailor the system to your firm's standards. Manage, edit, and refine the 24 pre-
 - **Unified Distribution:** A single Python package serves both the Backend and the UI.
 
 ## Agent Skills
-Legal Draft Skill utilizes a structured **Skills** architecture. The system comes pre-loaded with **24 specialized skills** for various legal drafting scenarios:
+Legal Draft Agent utilizes a structured **Skills** architecture. The system comes pre-loaded with **24 specialized skills** for various legal drafting scenarios:
 
 - `legal-memo`: Enforce memorandum headers, active voice, and specific signatory requirements.
 - `civil-complaint`: Drafts formal initial pleadings to initiate a lawsuit.
@@ -68,14 +68,14 @@ Legal Draft Skill utilizes a structured **Skills** architecture. The system come
 - `cease-and-desist`: Drafts formal demands to halt unauthorized activities.
 
 ### Using Skills with other LLMs (Claude, etc.)
-If you want to use these specialized legal skills in Claude or other LLM interfaces, you can find the structured `SKILL.md` files in the `src/legal_draft_skill/skills/` folder. Simply copy the content of the relevant skill's `SKILL.md` file and paste it into your system prompt or instructions.
+If you want to use these specialized legal skills in Claude or other LLM interfaces, you can find the structured `SKILL.md` files in the `src/legal_draft_agent/skills/` folder. Simply copy the content of the relevant skill's `SKILL.md` file and paste it into your system prompt or instructions.
 
 ## Quick Start
 
 ### Installation
 
 ```bash
-pip install legal-draft-skill
+pip install legal-draft-agent
 ```
 
 ### Running the System
@@ -83,7 +83,7 @@ pip install legal-draft-skill
 Start the unified system with a single command:
 
 ```bash
-legal-draft-skill start --provider "openrouter" --llm "google/gemini-2.0-flash-001" --api-key "your-api-key"
+legal-draft-agent start --provider "openrouter" --llm "google/gemini-2.0-flash-001" --api-key "your-api-key"
 ```
 
 Access the platform at:

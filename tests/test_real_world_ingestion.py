@@ -9,7 +9,7 @@ async def test_ingest_scanned_contract():
     Integration test for a simulated scanned PNG contract.
     Ensures OCR runs and returns extracted text.
     """
-    from legal_draft_skill.main import app
+    from legal_draft_agent.main import app
     file_path = "data/raw/scanned_contract.png"
     if not os.path.exists(file_path):
         pytest.skip("scanned_contract.png not found")
@@ -35,7 +35,7 @@ async def test_ingest_messy_pdf():
     Integration test for an inconsistently formatted PDF.
     Ensures PDF parsing extracts the text correctly.
     """
-    from legal_draft_skill.main import app
+    from legal_draft_agent.main import app
     file_path = "data/raw/messy_record.pdf"
     if not os.path.exists(file_path):
         pytest.skip("messy_record.pdf not found")
@@ -60,7 +60,7 @@ async def test_ingest_handwritten_note():
     Integration test for a handwritten note image.
     Tests OCR performance on non-standard text.
     """
-    from legal_draft_skill.main import app
+    from legal_draft_agent.main import app
     file_path = "data/raw/handwritten_note.png"
     if not os.path.exists(file_path):
         pytest.skip("handwritten_note.png not found")
@@ -81,7 +81,7 @@ async def test_ingest_extra_messy_pdf():
     """
     Integration test for the highly messy PDF with scribbles, typos, and cross-outs.
     """
-    from legal_draft_skill.main import app
+    from legal_draft_agent.main import app
     file_path = "data/raw/extra_messy_record.pdf"
     if not os.path.exists(file_path):
         pytest.skip("extra_messy_record.pdf not found")
@@ -105,7 +105,7 @@ async def test_full_workflow_smoke():
     """
     A smoke test that runs through ingestion and then generation.
     """
-    from legal_draft_skill.main import app
+    from legal_draft_agent.main import app
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # 1. Ingest

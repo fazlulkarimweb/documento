@@ -1,6 +1,6 @@
-# Contributing to Legal Draft Skill
+# Contributing to Legal Draft Agent
 
-Thank you for your interest in contributing to Legal Draft Skill! This document provides guidelines for contributing to the project and instructions for building the distribution packages.
+Thank you for your interest in contributing to Legal Draft Agent! This document provides guidelines for contributing to the project and instructions for building the distribution packages.
 
 ## Code of Conduct
 

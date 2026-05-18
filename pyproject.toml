@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "legal-draft-skill"
+name = "legal-draft-agent"
 version = "0.1.0"
 description = "Legal document processor with grounded retrieval and learning from edits."
 readme = "README.md"
@@ -31,10 +31,10 @@ dependencies = [
 ]
 
 [project.scripts]
-legal-draft-skill = "legal_draft_skill.cli:start"
+legal-draft-agent = "legal_draft_agent.cli:start"
 
 [tool.setuptools.package-data]
-legal_draft_skill = ["skills/**/*", "ui/**/*"]
+legal_draft_agent = ["skills/**/*", "ui/**/*"]
 docs = ["images/*.png"]
 
 [project.optional-dependencies]

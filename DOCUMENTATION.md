@@ -1,6 +1,6 @@
-# Documentation: Legal Draft Skill
+# Documentation: Legal Draft Agent
 
-This comprehensive guide covers installation, API usage, system architecture, and evaluation metrics for the Legal Draft Skill system.
+This comprehensive guide covers installation, API usage, system architecture, and evaluation metrics for the Legal Draft Agent system.
 
 ---
 
@@ -19,7 +19,7 @@ sudo apt-get update && sudo apt-get install -y tesseract-ocr
 ### Local Development Setup
 ```bash
 git clone <repository-url>
-cd legal-draft-skill
+cd legal-draft-agent
 
 # Create and activate a virtual environment
 python3 -m venv .venv
@@ -41,7 +41,7 @@ DB_PATH=legal_drafts.db
 ### Running the Application
 ```bash
 # Start both Backend and UI using the CLI
-legal-draft-skill start
+legal-draft-agent start
 ```
 
 ---

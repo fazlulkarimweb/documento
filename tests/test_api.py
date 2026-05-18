@@ -5,11 +5,11 @@ from unittest.mock import MagicMock, patch, AsyncMock
 
 @pytest.fixture
 def mock_app():
-    # We patch the instances that were already created in legal_draft_skill.main
-    with patch("legal_draft_skill.main.processor") as mock_proc, \
-         patch("legal_draft_skill.main.vector_store") as mock_vs, \
-         patch("legal_draft_skill.main.learner") as mock_learner, \
-         patch("legal_draft_skill.main.get_embeddings") as mock_emb:
+    # We patch the instances that were already created in legal_draft_agent.main
+    with patch("legal_draft_agent.main.processor") as mock_proc, \
+         patch("legal_draft_agent.main.vector_store") as mock_vs, \
+         patch("legal_draft_agent.main.learner") as mock_learner, \
+         patch("legal_draft_agent.main.get_embeddings") as mock_emb:
         
         # Ensure log_event and metrics are properly mocked as AsyncMocks
         mock_vs.log_event = AsyncMock()
@@ -21,7 +21,7 @@ def mock_app():
             "overall_system_health": {"status": "healthy", "recent_error_count": 0, "version": "0.1.0"}
         })
         
-        from legal_draft_skill.main import app
+        from legal_draft_agent.main import app
         yield app
 
 @pytest.mark.asyncio
@@ -30,7 +30,7 @@ async def test_document_ingestion_endpoint(mock_app):
     """
     Test POST /api/v1/documents with mocks
     """
-    from legal_draft_skill.main import processor, vector_store, get_embeddings
+    from legal_draft_agent.main import processor, vector_store, get_embeddings
     
     processor.process_file = AsyncMock(return_value={
         "text": "test text",
@@ -72,7 +72,7 @@ async def test_draft_generation_endpoint(mock_app):
     """
     Test POST /api/v1/drafts/generate with mocks
     """
-    from legal_draft_skill.main import vector_store, get_embeddings
+    from legal_draft_agent.main import vector_store, get_embeddings
     
     mock_emb_inst = AsyncMock()
     mock_emb_inst.aembed_query.return_value = [0.1] * 1536
@@ -82,7 +82,7 @@ async def test_draft_generation_endpoint(mock_app):
     vector_store.save_draft = AsyncMock(return_value="2026-05-16T10:00:00Z")
     vector_store.log_event = AsyncMock()
     
-    with patch("legal_draft_skill.main.Drafter") as MockDrafter:
+    with patch("legal_draft_agent.main.Drafter") as MockDrafter:
         instance = MockDrafter.return_value
         # Simulated LLM output in the new footnote style
         instance.generate_draft = AsyncMock(return_value={
@@ -119,7 +119,7 @@ async def test_feedback_loop_endpoint(mock_app):
     """
     Test POST /api/v1/drafts/feedback with mocks
     """
-    from legal_draft_skill.main import learner, vector_store
+    from legal_draft_agent.main import learner, vector_store
     learner.learn_from_edit = AsyncMock(return_value="# Updated Skill Content")
     vector_store.log_event = AsyncMock()
     
