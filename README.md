@@ -2,6 +2,12 @@
 
 <video src="https://raw.githubusercontent.com/fazlulkarimweb/legal-draft-agent/main/docs/images/legal-draft-agent-ad.mp4" width="100%" controls></video>
 
+---
+
+### 📺 Explainer Video and Why I Built it 
+👉 **[Click here to see the explainer video](https://www.linkedin.com/posts/fazlulkarimweb_buildinpublic-opensource-legalai-ugcPost-7462247460225110016-_V16)**
+
+
 ## Why Legal Draft Agent?
 
 Standard AI chatbots are completely risky for legal drafting—so I built a completely free, open-source Legal Draft Agent with a beautiful UI. Creating professional legal drafts from messy documents is always a massive challenge. It usually boils down to two main bottlenecks. First, legal documents are massive. Context overreach and poor retrieval are constant issues. Second, hallucination is a risk you simply cannot take with legal paperwork. Add in the fact that legal documents require a highly distinct style. Standard AI chatbots just won't cut it. Without the right engineering, prompting an LLM for legal work is dangerous.
